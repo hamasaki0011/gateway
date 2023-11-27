@@ -1,0 +1,138 @@
+- sensirion_common.c
+ sensirion_common_bytes_to_uint16_t(const uint8_t* bytes) 
+  convert bytes to uint16_t
+
+ uint32_t sensirion_common_bytes_to_uint32_t(const uint8_t* bytes) 
+  convert bytes to uint32_t
+
+ int16_t sensirion_common_bytes_to_int16_t(const uint8_t* bytes)
+  convert bytes to int16_t
+
+ int32_t sensirion_common_bytes_to_int32_t(const uint8_t* bytes)
+  convert bytes to uint32_t
+
+ float sensirion_common_bytes_to_float(const uint8_t* bytes) 
+  convert bytes to float
+
+ void sensirion_common_uint32_t_to_bytes(const uint32_t value, uint8_t* bytes)
+  convert uint32_t to byte
+
+ void sensirion_common_uint16_t_to_bytes(const uint16_t value, uint8_t* bytes)
+  convert uint16_t to bytes
+
+ void sensirion_common_int32_t_to_bytes(const int32_t value, uint8_t* bytes)
+  convert int32_t to bytes
+
+ void sensirion_common_int16_t_to_bytes(const int16_t value, uint8_t* bytes)
+  convert int16_t to bytes
+
+ void sensirion_common_float_to_bytes(const float value, uint8_t* bytes)
+  convert float data to bytes
+
+ void sensirion_common_copy_bytes(const uint8_t* source, uint8_t* destination,uint16_t data_length) 
+  copy bytes
+
+
+- sensirion_i2c.c
+ uint8_t sensirion_i2c_generate_crc(const uint8_t* data, uint16_t count) 
+  generate crc
+
+ int8_t sensirion_i2c_check_crc(const uint8_t* data, uint16_t count,uint8_t checksum) 
+  check crc
+
+ int16_t sensirion_i2c_general_call_reset(void)
+  reset
+
+ uint16_t sensirion_i2c_fill_cmd_send_buf(uint8_t* buf, uint16_t cmd,const uint16_t* args,uint8_t num_args) 
+  send buffer
+
+ int16_t sensirion_i2c_read_words_as_bytes(uint8_t address, uint8_t* data,uint16_t num_words)
+  read words
+
+ int16_t sensirion_i2c_read_words(uint8_t address, uint16_t* data_words,uint16_t num_words) 
+  read words
+
+ int16_t sensirion_i2c_write_cmd(uint8_t address, uint16_t command)
+  write command
+
+ int16_t sensirion_i2c_write_cmd_with_args(uint8_t address, uint16_t command,const uint16_t* data_words,uint16_t num_words)
+  write command with args
+
+ int16_t sensirion_i2c_delayed_read_cmd(uint8_t address, uint16_t cmd,uint32_t delay_us, uint16_t* data_words,uint16_t num_words)
+  read command
+
+ int16_t sensirion_i2c_read_cmd(uint8_t address, uint16_t cmd,uint16_t* data_words, uint16_t num_words)
+  read command
+
+ uint16_t sensirion_i2c_add_command_to_buffer(uint8_t* buffer, uint16_t offset,uint16_t command) 
+  set command to buffer
+
+ uint16_t sensirion_i2c_add_uint32_t_to_buffer(uint8_t* buffer, uint16_t offset,uint32_t data) 
+  set uint32_t data to buffer
+
+ uint16_t sensirion_i2c_add_int32_t_to_buffer(uint8_t* buffer, uint16_t offset,int32_t data)
+  set int32_t data to buffer
+
+ uint16_t sensirion_i2c_add_uint16_t_to_buffer(uint8_t* buffer, uint16_t offset,uint16_t data) 
+  set uint116_t data to buffer
+
+ uint16_t sensirion_i2c_add_int16_t_to_buffer(uint8_t* buffer, uint16_t offset,int16_t data) 
+  set int16_t data to buffer
+
+ uint16_t sensirion_i2c_add_float_to_buffer(uint8_t* buffer, uint16_t offset,float data)
+  set float data to buffer
+
+ uint16_t sensirion_i2c_add_bytes_to_buffer(uint8_t* buffer, uint16_t offset,const uint8_t* data,uint16_t data_length)
+  set bytes data to buffer
+
+ int16_t sensirion_i2c_write_data(uint8_t address, const uint8_t* data,uint16_t data_length) 
+  write data
+
+ int16_t sensirion_i2c_read_data_inplace(uint8_t address, uint8_t* buffer,uint16_t expected_data_length)
+  inplace read data 
+
+
+- sensirion_i2c_hal.c
+ void sensirion_i2c_hal_init(void)
+  initialize all hardware
+
+ void sensirion_i2c_hal_free(void)
+  Release all resources initialized
+
+ int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count)
+  execute one read transaction on i2c bus
+
+ int8_t sensirion_i2c_hal_write(uint8_t address, const uint8_t* data,uint16_t count)
+  execute one write transaction on i2c bus
+
+ void sensirion_i2c_hal_sleep_usec(uint32_t useconds)
+  sleep usecond
+
+- sfa3x_i2c.c
+ int16_t sfa3x_start_continuous_measurement
+  start measurement & continuous
+
+ int16_t sfa3x_stop_measurement(void)
+  set STOP command
+
+ int16_t sfa3x_read_measured_values_ticks(int16_t* hcho, int16_t* humidity,int16_t* temperature) 
+  set followings;
+    *hcho = sensirion_common_bytes_to_int16_t(&buffer[0]);
+    *humidity = sensirion_common_bytes_to_int16_t(&buffer[2]);
+    *temperature = sensirion_common_bytes_to_int16_t(&buffer[4]);
+
+ int16_t sfa3x_read_measured_values(float* hcho, float* humidity,float* temperature)
+  read & store followings;
+    *hcho = (float)hcho_ticks / 5.0f;
+    *humidity = (float)humidity_ticks / 100.0f;
+    *temperature = (float)temperature_ticks / 200.0f;
+
+ int16_t sfa3x_get_device_marking(unsigned char* device_marking,uint8_t device_marking_size)
+  get device_marking
+
+ int16_t sfa3x_device_reset(void)
+  reset device
+  
+
+
+ 
