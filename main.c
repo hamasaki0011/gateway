@@ -49,11 +49,6 @@ int main(int argc, char *argv[]){
     int year, month, day, hour, minute, second;
     //char resultData;
     
-    printf("argc = %d\n", argc);
-    printf("argv[0] = %s\n", argv[0]);
-    printf("argv[1] = %s\n", argv[1]);
-    printf("argv[2] = %s\n", argv[2]);
-    
     if(argc <= 1){
         /** Open i2c interface to connect sensirion formaldehyde sensor **/
         i2c_hal_init();
@@ -107,7 +102,6 @@ int main(int argc, char *argv[]){
         for (;;) {
             static bool flag = 0;
             static bool rept = 0;
-            //Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度", 0.0, 0.0, 0.0};
 
             // 2023.11.24 Get the latest time
             timer = time(NULL);
@@ -161,7 +155,6 @@ int main(int argc, char *argv[]){
      
         // To finish this application
         // What should we do at the next time to start application.
-    
         /*
         // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
         sens_error = sfa3x_stop_measurement();
@@ -173,6 +166,9 @@ int main(int argc, char *argv[]){
         }
         else{
             printf("Your request parameter is %s\n", argv[1]);
+            if(srgv[1} == "setup"){
+                printf("Welcopme to setup program\n"); 
+            }
             
         }
 }
