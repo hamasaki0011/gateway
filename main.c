@@ -1,51 +1,193 @@
 #include <stdio.h>  // printf(), strcmp(), fopen()
 #include <string.h> // memset()
-#include <unistd.h>     // for sleep()/usleep(), for close
+#include <unistd.h> // for sleep()/usleep(), for close
 #include <time.h>
+#include <dirent.h> // directory
 
-#include "sensirion_i2c_hal.h" 
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
+#include "common.h"
+#include "i2c_hal.h" 
 #include "sfa3x_i2c.h"
-#include "tcp_com.h"
 
 /*
  * TO USE CONSOLE OUTPUT (PRINTF) YOU MAY NEED TO ADAPT THE INCLUDE ABOVE OR
  * DEFINE IT ACCORDING TO YOUR PLATFORM:
  * #define printf(...)
+ */        
+/**
+ * Linux specific configuration. Adjust the following define to the device path
+ * of your sensor.
  */
-
+#define I2C_DEVICE_PATH "/dev/i2c-1"
 //sensor error status -> sensErrStatus
 #define FAILED_MAKE_RESET       10
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
+/** Define support functions **/
+int dummyRead(void);
+int wahttimeisit(void);
 
-uint8_t sensorStatus = 0;       // Sensor' statusoid
+uint8_t sensorStatus = 0;       // Sensor' status
 //extern uint8_t status;        // 
 //uint8_t status = STOP;        // system status
 unsigned char device_marking[32];
+// 2024.11.14 Initialize the result.
+char ans[1];
+/** Define DIR_PATH "/home/pi/works/upload_file". And worrk file is testWork.csv **/
+char file_name[] = "testWork.csv";
+char dir_path[] = "/home/pi/works/upload_file/";
+char fname[128];
+Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度", 0.0, 0.0, 0.0};
+
+int main(int argc, char *argv[]){
+//int main(void) {    
+    //int8_t waitPeriod = 60;
+    time_t timer;
+    struct tm *local;
+    int year, month, day, hour, minute, second;
+    //char resultData;
+    
+    printf("argc = %d\n", argc);
+    printf("argv[0] = %s\n", argv[0]);
+    printf("argv[1] = %s\n", argv[1]);
+    printf("argv[2] = %s\n", argv[2]);
+    
+    if(argc <= 1){
+        /** Open i2c interface to connect sensirion formaldehyde sensor **/
+        i2c_hal_init();
+        /** 2024.11.15 以下はうまく動作するがその後のIO操作ではNGとなる
+        i2c_device = open(I2C_DEVICE_PATH, O_RDWR);
+        if(i2c_device < 0){ 
+            printf("Failed to open device with %d.\nTerminated processing.\n", i2c_device);
+            return -1;
+        }
+        */
+        /** Make reset sensor hardware #139 in sfa3x_i2c.c **/
+        if (sfa3x_device_reset() != NO_ERROR){
+            printf("Failed to make Sensor reset.\nTerminated!\n");
+            sensorStatus = FAILED_MAKE_RESET;
+            return -1;
+        }
+        /** Confirm device marking function is #116 in sfa3x_i2c.c**/
+        if (sfa3x_get_device_marking(&device_marking[0], sizeof(device_marking)) != NO_ERROR) {
+            printf("Failed to get Device Marking\n\n");
+            sensorStatus = FAILED_GET_DEVICEMARK;
+            return -1;
+        }
+        printf("Welcome! Sensor which serial code is %s.\n\n", device_marking);
+        if (sfa3x_start_continuous_measurement() != NO_ERROR) {
+            printf("Failed to set senseor continuous_measurement()\n");
+            return -1;
+        }
+        /** wait around 500ms before starting to read data */
+        usleep(500000);
+        // At once dummy read.
+        dummyRead();
+    
+        /** @2024.11.13 Open work folder which names uploadfile. **/
+        DIR *dir = opendir(dir_path);
+        if (!dir){ 
+            printf("Can't find up_load directory.\nTerminated!\n");
+            return -1;
+        }
+        /** Prepare save file. **/
+        strcat(strcat(fname, dir_path), file_name);
+    
+        /* Start program control.
+        while(ans[0] != 0x79){
+            printf("Is it ok? If it is ok, please enter ""y""\n\n");
+            scanf("%c: ", &ans);
+            printf("your input is %c\n", ans[0]);
+        }
+        */
+
+        /* main loop */
+        for (;;) {
+            static bool flag = 0;
+            static bool rept = 0;
+            //Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度", 0.0, 0.0, 0.0};
+
+            // 2023.11.24 Get the latest time
+            timer = time(NULL);
+            // Convert to localtime
+            local = localtime(&timer);
+            // 年月日と時分秒をtm構造体の各パラメタから変数に代入
+            year = local->tm_year + 1900;   // Because year count starts at 1900
+            month = local->tm_mon + 1;      // Because 0 indicates January.
+            day = local->tm_mday;
+            hour = local->tm_hour;
+            minute = local->tm_min;
+            second = local->tm_sec;
+        
+            // Original is a wait around 10000ms before Sensor operating
+            // wait around 5s before Sensor operatin
+            if(second % 5 == 0){
+                if(rept == 0){
+                    rept = 1;
+                    // Display current time's information on console.
+                    printf("%d-%d-%d @%d:%d:%d\n", year, month, day, hour, minute, second);
+                    /** Read Measure function is #134 **/
+                    result = ReadMeasure(result);
+                    printf("%s: %.1f ppb\n", result.gasName, result.gas);
+                    printf("%s: %.2f %%RH\n", result.humid, result.humidity);
+                    printf("%s: %.2f °C\n\n", result.temp, result.temperature);
+                }
+                if(second == 0 && flag == 0){
+                    flag = 1;
+                    printf("Save file:~ %s\nSave data is %d-%d-%d %d:%d:%d\n", fname, year, month, day, hour, minute, second);
+                    FILE *fp = fopen(fname,"a");
+                    if (fp == NULL){
+                        printf("The file: %s is NOT able to open.\n", fname);
+                        return -1;
+                    }
+                    fprintf(fp, "measured_date,measured_value,point_id,place_id\n");
+                    fprintf(fp, "%d-%d-%d %d:%d:%d,%0.2f,%s\n", year, month, day, hour, minute, second, result.gas, result.gasName);
+                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s\n", year, month, day, hour, minute, second, result.humidity, result.humid);
+                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s\n", year, month, day, hour, minute, second, result.temperature, result.temp);        
+                    fclose(fp);            
+                }
+            }
+            else{
+                rept = 0;
+                flag = 0;
+            }
+            // 2023.11.24 Read measured data and display on terminal
+            // 2024.11.12 #233 in tcp_com.c
+            //if (closedir(dir)) printf("Failed to close directory.\n");
+            //printf("main_#125 Close directory upload_file\n");
+        }
+     
+        // To finish this application
+        // What should we do at the next time to start application.
+    
+        /*
+        // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
+        sens_error = sfa3x_stop_measurement();
+        printf("センサーを停止します。\n");
+        */
+        /** Exit from this application program **/
+        return 0;
+
+        }
+        else{
+            printf("Your request parameter is %s\n", argv[1]);
+            
+        }
+}
 
 int dummyRead(){
-    int8_t errCode = 0;
-    float data1, data2, data3;
-    Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度"};
+    float data1 = 0.0, data2 = 0.0, data3 = 0.0;
         
-    // it may adjust the measurement interval around for 500ms: sensirion_i2c_hal.c
-    //sensirion_i2c_hal_sleep_usec(500000);
-       
-    /** read and store data: sfa3x_i2c.c **/
-    errCode = sfa3x_read_measured_values(&data1, &data2, &data3);
-    
-    if(errCode != 0){
-        printf("Failed to read measure data form Sensor\n");
-        result.gas = 1.0;
-        result.humidity = 1.0;
-        result.temperature = 1.0;
+    // it may adjust the measurement interval around for 500ms
+    usleep(500000); // Original software settings.
+
+    if(sfa3x_read_measured_values(&data1, &data2, &data3) != 0){
+        printf("Error: Failed to read sensor data\n");
+        return -1;
     }
-    else{
-        result.gas = data1;
-        result.humidity = data2;
-        result.temperature = data3;
-    }
-    
+    printf("Success: to make a dummy read\n\n");
     return 0;    
 }
 
@@ -75,155 +217,6 @@ int whattimeisit(void){
     return 0;
 }
 
-int main(void) {
-    int8_t errorSensor = 0;
-    int8_t waitPeriod = 60;
-    time_t timer;
-    struct tm *local;
-    int year, month, day, hour, minute, second;
-    //char resultData;
-      
-    /** Open i2c interface to connect sensirion formaldehyde sensor **/ 
-    sensirion_i2c_hal_init();
-    /** Make reset sensor hardware **/
-    errorSensor = sfa3x_device_reset();
-    if (errorSensor) {
-        printf("Failed to initilize and rest Sensor: %i\n", errorSensor);
-        sensorStatus = FAILED_MAKE_RESET;
-        
-    }
-    
-    /** Confirm device marking **/
-    errorSensor = sfa3x_get_device_marking(&device_marking[0], sizeof(device_marking));
-    if (errorSensor) {
-        printf("Failed to get Device Marking: %i\n", errorSensor);
-        sensorStatus = FAILED_GET_DEVICEMARK;
-    }
-    printf("Welcome! Here is the serial code.: %s\n", device_marking);
-    
-    errorSensor = sfa3x_device_reset();
-    if (errorSensor) {
-        printf("Failed to initilize and rest Sensor: %i\n", errorSensor);
-        sensorStatus = FAILED_MAKE_RESET;
-    }
-    
-    errorSensor = sfa3x_start_continuous_measurement();
-    
-    if (errorSensor) {
-        printf("Failed to execute sfa3x_start_continuous_measurement(): %i\n", errorSensor);
-        //return 1;
-    }else{
-        printf("Start sensing ... \n");
-    }
-    
-    // wait around 200ms before starting to read data
-    usleep(200000);
-    dummyRead();
 
-    /* main loop */
-    for (;;) {
-        int8_t errCode = 0;
-        
-        // wait around 10000ms before Sensor operating
-        usleep(10000000);
 
-        // 2023.11.24 Get the latest time
-        timer = time(NULL);
-        // Convert to localtime
-        local = localtime(&timer);
-
-        // 年月日と時分秒をtm構造体の各パラメタから変数に代入
-        year = local->tm_year + 1900;   /* 1900年からの年数が取得されるため */
-        month = local->tm_mon + 1;  /* 0を1月としているため */
-        day = local->tm_mday;
-        hour = local->tm_hour; 
-        minute = local->tm_min;
-        second = local->tm_sec;
- 
-        /* 現在の日時を表示 */
-        printf("%d年%d月%d日 %d時%d分%d秒\n", year, month, day, hour, minute, second);
-
-        //int16_t send_size = 0;
-        //int16_t error = 0;
-
-        // 2023.11.24 Read measured data and display on terminal
-        ReadMeasure();
-        
-        FILE *fp = fopen("testWork.csv","a");
-        if (fp == NULL){
-            printf("It can NOT open.\n");
-            return 1;
-        }
-        //resultData = "Read data";
-        fprintf(fp, "%s \n", "read data1, read data2");
-        
-        fclose(fp);
-        /*
-         *2023.11.24
-         This program does not use TCP/IP communication
-        */
-        
-        /*
-        // Generate a socket and connecting to server
-        if(GenerateSocket() == 0){
-            printf("Success to open socket.\n");
-            // Transfer() loop
-            do{
-                // wait around 200ms before Sensor operating
-                usleep(200000);
-                // put here the command operation in transfer() function
-                errCode = Transfer();
-                // 次の接続要求の受け付けに移る //
-            }while(errCode == 0);
-            
-            // (1)comStatus = FAILED_ACCEPT_REQUEST
-            // (2)comStatus = FAILED_RECEIVE_REQUEST
-            if(errCode == -1 || errCode == -3){
-                printf("Acception or receiption error has occurred.. after a few minutes lator try again!!!\n");
-                sleep((unsigned int)(waitPeriod));
-            }
-            // (3)comStatus = SHUT_DOWN_NETWORK it may cause by Server shut down
-            else{
-                // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
-                errSensor = sfa3x_stop_measurement();
-                if(errSensor == 0){
-                    printf("Stoped Sensing.\n");
-                }
-                else printf("Failed to stop Sensing.\n");
-                
-                printf("Try again after few minutes late.\n");
-                sleep((unsigned int)(waitPeriod));
-            }
-        }else{
-            printf("Failed to generate a socket.\n");
-            printf("Try again after few minutes.\n");
-            // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
-            errSensor = sfa3x_device_reset();
-            if (errSensor) {
-                printf("Failed to initilize and rest Sensor: %i\n", errSensor);
-                sensorStatus = FAILED_MAKE_RESET;
-            }
-            printf("Waiting ... around 60s.\n");
-            sleep((unsigned int)(waitPeriod));
-            printf("Awake from waiting period.\n");
-        }
-        */
-    }
-     
-    // To finish this application
-    // What should we do at the next time to start application.
-    
-    /*
-    // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
-    sens_error = sfa3x_stop_measurement();
-    printf("センサーを停止します。\n");
-
-    // ソケット通信をクローズ
-    printf("ソケット通信をクローズします。"); 
-    close(c_sock);
-    */
-    
-    /** Exit from this application program **/
-    return 0;
-}
 

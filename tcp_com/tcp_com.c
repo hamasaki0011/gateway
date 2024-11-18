@@ -7,8 +7,8 @@
 #include <net/if.h>
 #include <unistd.h>     // for close
 #include <arpa/inet.h>
-#include "sensirion_common.h"
-#include "sensirion_i2c_hal.h" 
+#include "common.h"
+#include "i2c_hal.h" 
 #include "sfa3x_i2c.h"
 #include "tcp_com.h"
 
@@ -53,7 +53,7 @@ const char send_DM[] ="Device Marking: ";
 const char send_sense[] ="read measurement data\n";
 const char send_greeting[] ="Please send a command\n";
  
-static uint8_t status = STOP;   //System status
+//2024.11.3 int8_t status = STOP;   //System status
 uint8_t comStatus = 0;          // communication status
 int16_t w_addr;
 int16_t c_sock;
@@ -132,21 +132,22 @@ int8_t GenerateSocket(){
     //client.sin_port;
     IP address is converted to network-byte-order   
     //cient.sin_addr.s_addr; **/
+/* 2024.11.13
 int8_t Transfer(void){
     int8_t comStat;
     uint len = sizeof(client);
         
-    /** 接続要求の受け付け（接続要求くるまで待ち） =>accept()
-    * It would be executed every main loop
-    * 1st argument : socket descriptor
-    * 2nd argument : address of client PC
-    * 3rd argument : address length
-    * Clientから接続要求がくるまで終了しない。関数のなかでプログラムが待たされることになる。**/
+    // 接続要求の受け付け（接続要求くるまで待ち） =>accept()
+    // It would be executed every main loop
+    // 1st argument : socket descriptor
+    // 2nd argument : address of client PC
+    // 3rd argument : address length
+    // Clientから接続要求がくるまで終了しない。関数のなかでプログラムが待たされることになる
     printf("Waiting connect... \n");
 
     c_sock = accept(w_addr, (struct sockaddr *)&client, &len);
     if (c_sock == -1) {
-        /** in case of Failed to accept **/
+        // in case of Failed to accept
         printf("Failed to accept Client' request.\n");
         //close(w_addr);
         comStatus = FAILED_ACCEPT_REQUEST;
@@ -154,20 +155,20 @@ int8_t Transfer(void){
         // (1)Failed to accept Client' request then to exit form transfer loop.
         return comStat = -3;
     }else{
-        /** in case of accepting the request from Client  **/
+        // in case of accepting the request from Client
         int8_t errRecv = 0;
         printf("Accept connection from %s, (port= %d)\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
         comStatus = ACCEPT_REQUEST;
         //printf("... c_sock = %d\n...netCntr = %d\n", c_sock, netCntr++);
         
-        /** 接続済のソケットでデータのやり取り =>recv() **/
-        memset(recv_buf, 0, BUF_SIZE);  /** Clear read buffer **/
-        /** クライアントから文字列を受信: recv()
-         * 1st argument : socket descriptor
-         * 2nd argument : receive buffer pointer
-         * 3rd argument : buffer length
-         * 4th argument : flags one or more in MSG_CONNTERM, MSG_OOB, MSG_PEEK and MSG_WAITALL
-         * later, need study how to use the 4th argument **/
+        // 接続済のソケットでデータのやり取り =>recv()
+        memset(recv_buf, 0, BUF_SIZE);  // Clear read buffer
+        // クライアントから文字列を受信: recv()
+        // 1st argument : socket descriptor
+        // 2nd argument : receive buffer pointer
+        // 3rd argument : buffer length
+        // 4th argument : flags one or more in MSG_CONNTERM, MSG_OOB, MSG_PEEK and MSG_WAITALL
+        // later, need study how to use the 4th argument
          errRecv = recv(c_sock, recv_buf, BUF_SIZE, 0);
          if(errRecv == -1){
              printf("Receiption error has occurred\n");
@@ -192,7 +193,7 @@ int8_t Transfer(void){
         }else{
             //char *msg = "Success to receive request";
             comStatus = RECEIVE_REQUEST;
-            /** Analize a request from Client **/
+            // Analize a request from Client
             CmdAnalysis(c_sock, recv_buf);
         }
     }
@@ -204,6 +205,7 @@ int8_t Transfer(void){
     
     return comStat = 0;    
 }
+*/
 
 int8_t ReadMeasure0(void){
     int16_t errCode = 0;
@@ -229,7 +231,7 @@ int8_t ReadMeasure0(void){
     */
     return errCode = 0;
 }
-
+/*
 Sensor_data ReadMeasure(){
     int8_t errCode = 0;
     float data1, data2, data3;
@@ -238,7 +240,7 @@ Sensor_data ReadMeasure(){
     // it may adjust the measurement interval around for 500ms: sensirion_i2c_hal.c
     sensirion_i2c_hal_sleep_usec(500000);
        
-    /** read and store data: sfa3x_i2c.c **/
+    // read and store data: sfa3x_i2c.c
     errCode = sfa3x_read_measured_values(&data1, &data2, &data3);
     
     if(errCode != 0){
@@ -253,21 +255,22 @@ Sensor_data ReadMeasure(){
         result.temperature = data3;
     }
 
-    printf("errCode: %d\n", errCode);
-    printf("%s: %.1f ppb\n", result.gasName, result.gas);
-    printf("%s: %.2f %%RH\n", result.humid, result.humidity);
-    printf("%s: %.2f °C\n", result.temp, result.temperature);
+    printf("tcpcom_#256 sfa3x read data error: errCode: %d\n", errCode);
+    printf("tcpcom_#257 %s: %.1f ppb\n", result.gasName, result.gas);
+    printf("tcpcom_#258 %s: %.2f %%RH\n", result.humid, result.humidity);
+    printf("tcpcom_#259 %s: %.2f °C\n", result.temp, result.temperature);
     putchar('\n');
     
     return result;
 }
-
+*/
 
 /** command processing **/
+/* 2024.11.13
 void CmdAnalysis(int16_t sock, char* str){
         
     if(strcmp(str, "connect\n") == 0){
-        /** connecting processing **/
+        // connecting processing
         if(comStatus != CONNECT){
             if(Connect(sock) == 0){ 
                 printf("Connecting...\n");
@@ -284,7 +287,7 @@ void CmdAnalysis(int16_t sock, char* str){
         //return CONNECT;
         
     }else if (strcmp(str, "finish\n") == 0) {
-        /** disconnecting processiing **/
+        // disconnecting processiing
         if(FinishProcess(sock) == 0){
             printf("Close socket\n");
             // Close socket communication
@@ -296,9 +299,9 @@ void CmdAnalysis(int16_t sock, char* str){
         // return FINISH;
         
     }else if(strcmp(str, "reset\n") == 0){
-        /** Initialize Sensor **/
+        // Initialize Sensor
         if(status == STOP){
-            /** Make reset sensor hardware **/
+            // Make reset sensor hardware
             if (sfa3x_device_reset() != 0) {
                   printf("Failed to reset Sensor:\n");
                   sensorStatus = FAILED_MAKE_RESET;
@@ -317,11 +320,11 @@ void CmdAnalysis(int16_t sock, char* str){
             SendStatus(sock, msg);
             //status = START; // overwrite the status
         }
-        /** wait around 200ms before Sensor operating **/
+        // wait around 200ms before Sensor operating
         //usleep(200000);
                 
     }else if(strcmp(str, "start\n") == 0){
-        /** Start command processing **/
+        // Start command processing
         if(status == STOP){
             if(StartMeasure(sock) == 0){
                 char *msg = "Start to measure...\r\n";
@@ -340,7 +343,7 @@ void CmdAnalysis(int16_t sock, char* str){
         }
 
     }else if(strcmp(str, "startsense\n") == 0){
-        /** Start sensing command procedure **/
+        // Start sensing command procedure
         if(status == START || status == STOP){
             if(StartMeasure(sock) == 0){
                 char *msg = "Start continuous sensing...\r\n";
@@ -363,7 +366,7 @@ void CmdAnalysis(int16_t sock, char* str){
         }
 
     }else if(strcmp(str, "readstatus\n") == 0){
-        /** request read operation status **/
+        // request read operation status
         if(status == SENSING){
             char *msg = "Senseing data\r\n";
             SendStatus(sock, msg);
@@ -395,25 +398,21 @@ void CmdAnalysis(int16_t sock, char* str){
             SendStatus(sock, msg);
             status = STOP; // Is it ok?                
         }
-
-        
     }else if(strcmp(str, "stopsense\n") == 0){
         // stop measurement processing
         if(status == SENSING){
             char *msg = "Stop continuous sensing\r\n";
             SendStatus(sock, msg);
             status = START;
-            /*
-            if(StopSensing(sock) == 0){
-                char *msg = "Stop continupus sense\r\n";
-                SendStatus(sock, msg);
-                status = start;
-            }else{
-                char *msg = "Failed to execute stop command for sensor\r\nPlease try again\r\n";
-                SendStatus(sock, msg);
-                status = ERROR;                    
-            }
-            */                            
+            //if(StopSensing(sock) == 0){
+            //    char *msg = "Stop continupus sense\r\n";
+            //    SendStatus(sock, msg);
+            //    status = start;
+            //}else{
+            //    char *msg = "Failed to execute stop command for sensor\r\nPlease try again\r\n";
+            //    SendStatus(sock, msg);
+            //    status = ERROR;                    
+            //}
         }else{
             char *msg = "Already stopped continuous sense!\r\n";
             SendStatus(sock, msg);
@@ -429,7 +428,7 @@ void CmdAnalysis(int16_t sock, char* str){
             SendStatus(sock, msg);
             
         }else{
-            /** read measurement data **/
+            // read measurement data
             hcho = ReadMeasure();
             
             if(SendData(sock, hcho) == 0){    
@@ -470,7 +469,7 @@ void CmdAnalysis(int16_t sock, char* str){
     }
     //return 0;
 }
-
+*/
 int8_t Connect(int16_t sock){
     int8_t result = 0;
     
@@ -539,22 +538,23 @@ int8_t SendData0(int16_t sock){
     /** normal terminaion on stop command **/
     return 0;
 }
-
+/* 2024.11.13
 int8_t SendData(int16_t sock, Sensor_data h){
     int8_t errCode = 0;
     
-    /** Clear send_buf **/
+    // Clear send_buf
     memset(send_buf, 0, 1024);
     
-    /** Prepare send data with format **/
+    // Prepare send data with format
     sprintf(send_buf, "mData,%s,%.1f\r\n%s,%.1f\r\n%s,%.1f\r\n", h.gasName, h.gas, h.humid, h.humidity, h.temp, h.temperature);        
     
     errCode = send(sock, send_buf, sizeof(send_buf)/sizeof(send_buf[0]), 0);    
     if (errCode == -1) return -1;
             
-    /** normal terminaion on stop command **/
+    // normal terminaion on stop command
     return 0;
 }
+*/
 int8_t SendStatus(int16_t sock, char reply[]){
     int16_t send_size = 0;
 

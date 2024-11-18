@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SENSIRION_CONFIG_H
-#define SENSIRION_CONFIG_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 /**
  * If your platform does not provide the library stdlib.h you have to remove the
@@ -85,4 +85,4 @@
 
 #endif /* __cplusplus */
 
-#endif /* SENSIRION_CONFIG_H */
+#endif /* CONFIG_H */

@@ -43,7 +43,16 @@
 extern "C" {
 #endif
 
-#include "sensirion_config.h"
+#include "config.h"
+typedef struct{
+    char *gasName;  // gasName
+    char *humid;    // humidity
+    char *temp;     // temperature
+    
+    float gas;
+    float humidity;
+    float temperature;
+}Sensor_data;
 
 /**
  * sfa3x_start_continuous_measurement() - Starts continuous measurement in
@@ -105,6 +114,8 @@ int16_t sfa3x_read_measured_values(float* hcho, float* humidity,
  */
 int16_t sfa3x_get_device_marking(unsigned char* device_marking,
                                  uint8_t device_marking_size);
+                                 
+int8_t SendData(int16_t sock, Sensor_data h);
 
 /**
  * sfa3x_device_reset() - Executes a reset on the device.
@@ -112,6 +123,8 @@ int16_t sfa3x_get_device_marking(unsigned char* device_marking,
  * @return 0 on success, an error code otherwise
  */
 int16_t sfa3x_device_reset(void);
+
+Sensor_data ReadMeasure(Sensor_data r);
 
 #ifdef __cplusplus
 }

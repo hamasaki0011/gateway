@@ -29,10 +29,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SENSIRION_I2C_H
-#define SENSIRION_I2C_H
+#ifndef I2C_H
+#define I2C_H
 
-#include "sensirion_config.h"
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,11 +52,32 @@ extern "C" {
 #define SENSIRION_NUM_WORDS(x) (sizeof(x) / SENSIRION_WORD_SIZE)
 #define SENSIRION_MAX_BUFFER_WORDS 32
 
+/**
+ * sensirion_i2c_add_command_to_buffer() - Add a command to the buffer at offset. Adds 2 bytes to the buffer.
+ * @param buffer  Pointer to buffer in which the write frame will be prepared.
+ *                Caller needs to make sure that there is enough space after
+ *                offset left to write the data into the buffer.
+ * @param offset  Offset of the next free byte in the buffer.
+ * @param command Command to be written into the buffer.
+ * @return        Offset of next free byte in the buffer after writing the data.
+ */
+uint16_t i2c_add_command_to_buffer(uint8_t* buffer, uint16_t offset, uint16_t command);
+/**
+ * si2c_write_data() - Writes data to the Sensor.
+ * @note This is just a wrapper for sensirion_i2c_hal_write() to
+ *       not need to include the HAL in the drivers.
+ * @param address     I2C address to write to.
+ * @param data        Pointer to the buffer containing the data to write.
+ * @param data_length Number of bytes to send to the Sensor.
+ * @return        NO_ERROR on success, error code otherwise
+ */
+int16_t i2c_write_data(uint8_t address, const uint8_t* data, uint16_t data_length);
+
+/** @2024.11.15 **/
 uint8_t sensirion_i2c_generate_crc(const uint8_t* data, uint16_t count);
 
 int8_t sensirion_i2c_check_crc(const uint8_t* data, uint16_t count,
                                uint8_t checksum);
-
 /**
  * sensirion_i2c_general_call_reset() - Send a general call reset.
  *
@@ -166,20 +187,7 @@ int16_t sensirion_i2c_delayed_read_cmd(uint8_t address, uint16_t cmd,
 int16_t sensirion_i2c_read_cmd(uint8_t address, uint16_t cmd,
                                uint16_t* data_words, uint16_t num_words);
 
-/**
- * sensirion_i2c_add_command_to_buffer() - Add a command to the buffer at
- *                                         offset. Adds 2 bytes to the buffer.
- *
- * @param buffer  Pointer to buffer in which the write frame will be prepared.
- *                Caller needs to make sure that there is enough space after
- *                offset left to write the data into the buffer.
- * @param offset  Offset of the next free byte in the buffer.
- * @param command Command to be written into the buffer.
- *
- * @return        Offset of next free byte in the buffer after writing the data.
- */
-uint16_t sensirion_i2c_add_command_to_buffer(uint8_t* buffer, uint16_t offset,
-                                             uint16_t command);
+//uint16_t sensirion_i2c_add_command_to_buffer(uint8_t* buffer, uint16_t offset, uint16_t command);
 
 /**
  * sensirion_i2c_add_uint32_t_to_buffer() - Add a uint32_t to the buffer at
@@ -277,20 +285,8 @@ uint16_t sensirion_i2c_add_bytes_to_buffer(uint8_t* buffer, uint16_t offset,
                                            const uint8_t* data,
                                            uint16_t data_length);
 
-/**
- * sensirion_i2c_write_data() - Writes data to the Sensor.
- *
- * @note This is just a wrapper for sensirion_i2c_hal_write() to
- *       not need to include the HAL in the drivers.
- *
- * @param address     I2C address to write to.
- * @param data        Pointer to the buffer containing the data to write.
- * @param data_length Number of bytes to send to the Sensor.
- *
- * @return        NO_ERROR on success, error code otherwise
- */
-int16_t sensirion_i2c_write_data(uint8_t address, const uint8_t* data,
-                                 uint16_t data_length);
+
+//int16_t sensirion_i2c_write_data(uint8_t address, const uint8_t* data, uint16_t data_length);
 
 /**
  * sensirion_i2c_read_data_inplace() - Reads data from the Sensor.
