@@ -10,7 +10,7 @@
 #include <sys/ioctl.h>
 
 #include "common.h"
-#include "i2c_hal.h" 
+#include "i2c.h" 
 #include "sfa3x_i2c.h"
 
 /*
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]){
                     rept = 1;
                     // Display current time's information on console.
                     printf("%d-%d-%d @%d:%d:%d\n", year, month, day, hour, minute, second);
-                    /** Read Measure function is #134 **/
+                    /** Read Measure function is #134 in sfa3x_i2c.c**/
                     result = ReadMeasure(result);
                     printf("%s: %.1f ppb\n", result.gasName, result.gas);
                     printf("%s: %.2f %%RH\n", result.humid, result.humidity);
@@ -211,7 +211,6 @@ int main(int argc, char *argv[]){
                     scanf("%s", ans);
                     if(!strcmp(ans, "y")){
                         OverWriteFile(fname);
-                    //    break;
                     }
                     strcpy(fname, "");
                 }
@@ -225,7 +224,7 @@ int main(int argc, char *argv[]){
             printf("Failed to open file: %s\n", fname);
             return -1;
         }
-        printf("main_#226 open file, \"%s\"\n", fname);
+        
         // Read config.
         str = (char *)malloc(sizeof(char) * 256);
         num = (int8_t *)malloc(sizeof(int8_t));
@@ -241,31 +240,24 @@ int main(int argc, char *argv[]){
                 Sensor[i] = SetSensor(str, *id, unit);
             }   
         }
-        printf("main_#246 Location is \"%s\"\n", Place.name);
-        printf("main_#247 There are %d sensors\n", Place.point_num);
-        for(i = 0;i < Place.point_num; i++){
-            printf("main_#249 No. %d sensor is \"%s\"\n", Sensor[i].id, Sensor[i].name);
-        }
-        
         free(mark); 
         free(id); 
         free(num); 
         free(str);
         
         putchar('\n');
-        printf("main_#250 place: %s\n",Place.name);
-        printf("main_#251 sensor_number: %d\n",Place.point_num);
+        printf("main_#255 Location name is \"%s\" and there are %d sensor points.\nAs followings;\n", Place.name, Place.point_num);
         for(i=0;i < Place.point_num;i++){
-            printf("main_#253 Sensor[%d] is %s\n", i, Sensor[i].name);
+            printf("main_#257 Sensor[%d] is %s\n", i, Sensor[i].name);
         }
         fclose(fp);
         putchar('\n');
         printf("main_#257 Close %s file.\n", fname);
         printf("main_#258 And terminate.\n");
     
-    /** Setup operation class 2.
-     *  Frpm creating a setup file. **/
     }else{
+        /** Setup operation class 2.
+        *  Frpm creating a setup file. **/
         char point[128];
         char ans[5];
         

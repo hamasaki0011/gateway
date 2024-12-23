@@ -6,7 +6,7 @@
 #include "sfa3x_i2c.h"
 #include "common.h"
 #include "i2c.h"
-#include "i2c_hal.h"
+//#include "i2c_hal.h"
 
 #define SFA3X_I2C_ADDRESS 0x5D
 
@@ -48,16 +48,15 @@ int16_t sfa3x_read_measured_values_ticks(int16_t* hcho, int16_t* humidity, int16
     int16_t error;
     uint8_t buffer[9];
     uint16_t offset = 0;
-    //offset = sensirion_i2c_add_command_to_buffer(&buffer[0], offset, 0x327);
+    
     offset = i2c_add_command_to_buffer(&buffer[0], offset, 0x327);
-    //error = sensirion_i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
     error = i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
     if (error) {
         return error;
     }
-    //sensirion_i2c_hal_sleep_usec(5000);
     usleep(5000);
-    error = sensirion_i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 6);
+    //error = sensirion_i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 6);
+    error = i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 6);
     if (error) {
         return error;
     }
@@ -74,8 +73,7 @@ int16_t sfa3x_read_measured_values(float* hcho, float* humidity, float* temperat
     int16_t humidity_ticks;
     int16_t temperature_ticks;
 
-    error = sfa3x_read_measured_values_ticks(&hcho_ticks, &humidity_ticks,
-                                             &temperature_ticks);
+    error = sfa3x_read_measured_values_ticks(&hcho_ticks, &humidity_ticks, &temperature_ticks);
     if (error) {
         return error;
     }
@@ -92,18 +90,17 @@ int16_t sfa3x_get_device_marking(unsigned char* device_marking, uint8_t device_m
     int16_t error;
     uint8_t buffer[48];
     uint16_t offset = 0;
-    //offset = sensirion_i2c_add_command_to_buffer(&buffer[0], offset, 0xD060);
+    /** i2c_add_command_to_buffer is #10 in i2c.c  **/
     offset = i2c_add_command_to_buffer(&buffer[0], offset, 0xD060);
-    //error = sensirion_i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
     error = i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
     if (error) {
         return error;
     }
 
-    //sensirion_i2c_hal_sleep_usec(2000);
     usleep(2000);
 
-    error = sensirion_i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 32);
+    //error = sensirion_i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 32);
+    error = i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 32);
     if (error) {
         return error;
     }
