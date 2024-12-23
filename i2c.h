@@ -1,42 +1,11 @@
 /*
- * Copyright (c) 2018, Sensirion AG
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- *
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- *
- * * Neither the name of Sensirion AG nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Copyright (c) 2024
  */
 
 #ifndef I2C_H
 #define I2C_H
 
-#include "config.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "common.h"
 
 #define CRC_ERROR 1
 #define I2C_BUS_ERROR 2
@@ -47,10 +16,10 @@ extern "C" {
 #define CRC8_INIT 0xFF
 #define CRC8_LEN 1
 
-#define SENSIRION_COMMAND_SIZE 2
-#define SENSIRION_WORD_SIZE 2
-#define SENSIRION_NUM_WORDS(x) (sizeof(x) / SENSIRION_WORD_SIZE)
-#define SENSIRION_MAX_BUFFER_WORDS 32
+#define COMMAND_SIZE 2
+#define WORD_SIZE 2
+#define NUM_WORDS(x) (sizeof(x) / WORD_SIZE)
+#define MAX_BUFFER_WORDS 32
 
 /**
  * sensirion_i2c_add_command_to_buffer() - Add a command to the buffer at offset. Adds 2 bytes to the buffer.
@@ -93,8 +62,8 @@ int16_t sensirion_i2c_general_call_reset(void);
  * and a set of argument words. The output buffer interleaves argument words
  * with their checksums.
  * @buf:        The generated buffer to send over i2c. Then buffer length must
- *              be at least SENSIRION_COMMAND_LEN + num_args *
- *              (SENSIRION_WORD_SIZE + CRC8_LEN).
+ *              be at least COMMAND_LEN + num_args *
+ *              (WORD_SIZE + CRC8_LEN).
  * @cmd:        The i2c command to send. It already includes a checksum.
  * @args:       The arguments to the command. Can be NULL if none.
  * @num_args:   The number of word arguments in args.
@@ -130,7 +99,7 @@ int16_t sensirion_i2c_read_words(uint8_t address, uint16_t* data_words,
  * @num_words:  Number of data words(!) to read (without CRC bytes)
  *              Since only word-chunks can be read from the sensor the size
  *              is still specified in sensor-words (num_words = num_bytes *
- *              SENSIRION_WORD_SIZE)
+ *              WORD_SIZE)
  *
  * @return      NO_ERROR on success, an error code otherwise
  */
@@ -186,8 +155,6 @@ int16_t sensirion_i2c_delayed_read_cmd(uint8_t address, uint16_t cmd,
  */
 int16_t sensirion_i2c_read_cmd(uint8_t address, uint16_t cmd,
                                uint16_t* data_words, uint16_t num_words);
-
-//uint16_t sensirion_i2c_add_command_to_buffer(uint8_t* buffer, uint16_t offset, uint16_t command);
 
 /**
  * sensirion_i2c_add_uint32_t_to_buffer() - Add a uint32_t to the buffer at
@@ -275,7 +242,7 @@ uint16_t sensirion_i2c_add_float_to_buffer(uint8_t* buffer, uint16_t offset,
  * @param offset      Offset of the next free byte in the buffer.
  * @param data        Pointer to data to be written into the buffer.
  * @param data_length Number of bytes to be written into the buffer. Needs to
- *                    be a multiple of SENSIRION_WORD_SIZE otherwise the
+ *                    be a multiple of WORD_SIZE otherwise the
  *                    function returns BYTE_NUM_ERROR.
  *
  * @return            Offset of next free byte in the buffer after writing the
@@ -284,9 +251,6 @@ uint16_t sensirion_i2c_add_float_to_buffer(uint8_t* buffer, uint16_t offset,
 uint16_t sensirion_i2c_add_bytes_to_buffer(uint8_t* buffer, uint16_t offset,
                                            const uint8_t* data,
                                            uint16_t data_length);
-
-
-//int16_t sensirion_i2c_write_data(uint8_t address, const uint8_t* data, uint16_t data_length);
 
 /**
  * sensirion_i2c_read_data_inplace() - Reads data from the Sensor.
@@ -297,15 +261,12 @@ uint16_t sensirion_i2c_add_bytes_to_buffer(uint8_t* buffer, uint16_t offset,
  *                             CRC. Twice the size of data should always
  *                             suffice.
  * @param expected_data_length Number of bytes to read (without CRC). Needs
- *                             to be a multiple of SENSIRION_WORD_SIZE,
+ *                             to be a multiple of WORD_SIZE,
  *                             otherwise the function returns BYTE_NUM_ERROR.
  *
  * @return            NO_ERROR on success, an error code otherwise
  */
 int16_t sensirion_i2c_read_data_inplace(uint8_t address, uint8_t* buffer,
                                         uint16_t expected_data_length);
-#ifdef __cplusplus
-}
-#endif
 
-#endif /* SENSIRION_I2C_H */
+#endif /* I2C_H */

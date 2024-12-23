@@ -1,4 +1,4 @@
-common_sources = config.h common.h common.c
+common_sources = common.h common.c
 i2c_sources = i2c_hal.h i2c.h i2c.c
 sfa3x_sources = sfa3x_i2c.h sfa3x_i2c.c
 #comspec_sources = comspec.h comspec.c
