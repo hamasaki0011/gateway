@@ -15,14 +15,12 @@ int16_t sfa3x_start_continuous_measurement(void) {
     int16_t error;
     uint8_t buffer[2];
     uint16_t offset = 0;
+
     offset = i2c_add_command_to_buffer(&buffer[0], offset, 0x06);
-    //offset = sensirion_i2c_add_command_to_buffer(&buffer[0], offset, 0x06);
     error = i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
-    //error = sensirion_i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
     if (error) {
         return error;
     }
-    //sensirion_i2c_hal_sleep_usec(1000);
     usleep(1000);
     return NO_ERROR;    // NO_ERROR: 0 in common.h
 }
@@ -31,14 +29,12 @@ int16_t sfa3x_stop_measurement(void) {
     int16_t error;
     uint8_t buffer[2];
     uint16_t offset = 0;
-    //offset = sensirion_i2c_add_command_to_buffer(&buffer[0], offset, 0x104);
+
     offset = i2c_add_command_to_buffer(&buffer[0], offset, 0x104);
-    //error = sensirion_i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
     error = i2c_write_data(SFA3X_I2C_ADDRESS, &buffer[0], offset);
     if (error) {
         return error;
     }
-    //sensirion_i2c_hal_sleep_usec(50000);
     usleep(50000);
     return NO_ERROR;
 }
@@ -55,14 +51,16 @@ int16_t sfa3x_read_measured_values_ticks(int16_t* hcho, int16_t* humidity, int16
         return error;
     }
     usleep(5000);
-    //error = sensirion_i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 6);
     error = i2c_read_data_inplace(SFA3X_I2C_ADDRESS, &buffer[0], 6);
     if (error) {
         return error;
     }
-    *hcho = sensirion_common_bytes_to_int16_t(&buffer[0]);
-    *humidity = sensirion_common_bytes_to_int16_t(&buffer[2]);
-    *temperature = sensirion_common_bytes_to_int16_t(&buffer[4]);
+    //*hcho = sensirion_common_bytes_to_int16_t(&buffer[0]);
+    *hcho = common_bytes_to_int16_t(&buffer[0]);
+    //*humidity = sensirion_common_bytes_to_int16_t(&buffer[2]);
+    //*temperature = sensirion_common_bytes_to_int16_t(&buffer[4]);
+    *humidity = common_bytes_to_int16_t(&buffer[2]);
+    *temperature = common_bytes_to_int16_t(&buffer[4]);
     return NO_ERROR;
 }
 
@@ -104,8 +102,7 @@ int16_t sfa3x_get_device_marking(unsigned char* device_marking, uint8_t device_m
     if (error) {
         return error;
     }
-    sensirion_common_copy_bytes(&buffer[0], device_marking,
-                                device_marking_size);
+    common_copy_bytes(&buffer[0], device_marking, device_marking_size);
     return NO_ERROR;
 }
 

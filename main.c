@@ -5,7 +5,6 @@
 #include <time.h>
 #include <dirent.h>     // directory
 #include <stdbool.h>    // bool
-
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
