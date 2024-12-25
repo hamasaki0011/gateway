@@ -4,9 +4,9 @@
 #include <stdio.h>  // printf(), strcmp(), fopen()
 #include <unistd.h> // for sleep()/usleep(), for close
 #include "sfa3x_i2c.h"
+#include "define.h"
 #include "common.h"
 #include "i2c.h"
-//#include "i2c_hal.h"
 
 #define SFA3X_I2C_ADDRESS 0x5D
 
@@ -55,12 +55,9 @@ int16_t sfa3x_read_measured_values_ticks(int16_t* hcho, int16_t* humidity, int16
     if (error) {
         return error;
     }
-    //*hcho = sensirion_common_bytes_to_int16_t(&buffer[0]);
-    *hcho = common_bytes_to_int16_t(&buffer[0]);
-    //*humidity = sensirion_common_bytes_to_int16_t(&buffer[2]);
-    //*temperature = sensirion_common_bytes_to_int16_t(&buffer[4]);
-    *humidity = common_bytes_to_int16_t(&buffer[2]);
-    *temperature = common_bytes_to_int16_t(&buffer[4]);
+    *hcho = bytes_to_int16_t(&buffer[0]);
+    *humidity = bytes_to_int16_t(&buffer[2]);
+    *temperature = bytes_to_int16_t(&buffer[4]);
     return NO_ERROR;
 }
 
@@ -102,7 +99,7 @@ int16_t sfa3x_get_device_marking(unsigned char* device_marking, uint8_t device_m
     if (error) {
         return error;
     }
-    common_copy_bytes(&buffer[0], device_marking, device_marking_size);
+    copy_bytes(&buffer[0], device_marking, device_marking_size);
     return NO_ERROR;
 }
 
@@ -113,6 +110,7 @@ int16_t sfa3x_device_reset(void) {
     uint16_t offset = 0;
     uint16_t command = 0xd304;
     
+    i2c_hal_init();
     // i2c.c_#175 i2c_write_data()
     offset = i2c_add_command_to_buffer(&buffer[0], offset, command);
     // i2c.c_# i2c_write_data()
