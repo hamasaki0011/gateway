@@ -33,6 +33,7 @@ unsigned char device_marking[32];
 char work_file[] = "testWork.csv";
 char setup_file[] = "config";
 char dir_path[] = "/home/pi/works/upload_file/";
+char location_name[] = "株式会社A";
 char fname[128];
 
 LOCATION Place;         // Monitor site information, name and number of sensor point's.
@@ -111,21 +112,22 @@ int main(int argc, char *argv[]){
                     printf("%d-%d-%d @%d:%d:%d\n", year, month, day, hour, minute, second);
                     /** Read Measure function is #134 in sfa3x_i2c.c**/
                     result = ReadMeasure(result);
+                    printf("%s\n", location_name);
                     printf("%s: %.1f ppb\n", result.gasName, result.gas);
                     printf("%s: %.2f %%RH\n", result.humid, result.humidity);
                     printf("%s: %.2f °C\n\n", result.temp, result.temperature);
                 }
                 if(second == 0 && flag == 0){
                     flag = 1;
-                    FILE *fp = fopen(fname,"a");
+                    FILE *fp = fopen(fname,"w");
                     if (fp == NULL){
                         printf("The file: %s is NOT able to open.\n", fname);
                         return -1;
                     }
-                    fprintf(fp, "measured_date,measured_value,point_id,place_id\n");
-                    fprintf(fp, "%d-%d-%d %d:%d:%d,%0.2f,%s\n", year, month, day, hour, minute, second, result.gas, result.gasName);
-                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s\n", year, month, day, hour, minute, second, result.humidity, result.humid);
-                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s\n", year, month, day, hour, minute, second, result.temperature, result.temp);        
+                    fprintf(fp, "measured_date,measured_value,sensor,place\n");
+                    fprintf(fp, "%d-%d-%d %d:%d:%d,%0.2f,%s,%s\n", year, month, day, hour, minute, second, result.gas, result.gasName, location_name);
+                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s,%s\n", year, month, day, hour, minute, second, result.humidity, result.humid, location_name);
+                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s,%s\n", year, month, day, hour, minute, second, result.temperature, result.temp, location_name);        
                     fclose(fp);
                     printf("Saved:~ %s\n\n", fname);            
                 }

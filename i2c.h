@@ -6,7 +6,6 @@
 
 #include "define.h"
 #include "common.h"
-//#include <stdint.h>
 
 #define CRC_ERROR 1
 #define I2C_BUS_ERROR 2
