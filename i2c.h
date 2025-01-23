@@ -57,23 +57,6 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum);
  * @return      The number of bytes written to buf. */
 uint16_t i2c_fill_cmd_send_buf(uint8_t* buf, uint16_t cmd, const uint16_t* args, uint8_t num_args);
 
-/** i2c_add_command_to_buffer() - Add a command to the buffer at offset. Adds 2 bytes to the buffer.
- * @param buffer  Pointer to buffer in which the write frame will be prepared.
- *                Caller needs to make sure that there is enough space after
- *                offset left to write the data into the buffer.
- * @param offset  Offset of the next free byte in the buffer.
- * @param command Command to be written into the buffer.
- * @return        Offset of next free byte in the buffer after writing the data. */
-uint16_t i2c_add_command_to_buffer(uint8_t* buffer, uint16_t offset, uint16_t command);
-
-/** si2c_write_data() - Writes data to the Sensor.
- * @note This is just a wrapper for sensirion_i2c_hal_write() to not need to include the HAL in the drivers.
- * @param address     I2C address to write to.
- * @param data        Pointer to the buffer containing the data to write.
- * @param data_length Number of bytes to send to the Sensor.
- * @return        NO_ERROR on success, error code otherwise */
-int16_t i2c_write_data(uint8_t address, const uint8_t* data, uint16_t data_length);
-
 /** i2c_read_words() - read data words from sensor
  * @address:    Sensor i2c address
  * @data_words: Allocated buffer to store the read words. The buffer may also have been modified in case of an error.
@@ -107,17 +90,6 @@ int16_t i2c_delayed_read_cmd(uint8_t address, uint16_t cmd, uint32_t delay_us, u
  * @num_words:  Data words to read (without CRC bytes)
  * @return      NO_ERROR on success, an error code otherwise */
 int16_t i2c_read_cmd(uint8_t address, uint16_t cmd, uint16_t* data_words, uint16_t num_words);
-
-/** i2c_read_data_inplace() - Reads data from the Sensor.
- * @param address              Sensor I2C address
- * @param buffer               Allocated buffer to store data as bytes. Needs
- *                             to be big enough to store the data including
- *                             CRC. Twice the size of data should always suffice.
- * @param expected_data_length Number of bytes to read (without CRC). Needs
- *                             to be a multiple of WORD_SIZE,
- *                             otherwise the function returns BYTE_NUM_ERROR.
- * @return            NO_ERROR on success, an error code otherwise */
-int16_t i2c_read_data_inplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length);
 
 /** i2c_add_uint32_t_to_buffer() - Add a uint32_t to the buffer at offset. Adds 6 bytes to the buffer.
  * @param buffer  Pointer to buffer in which the write frame will be prepared.

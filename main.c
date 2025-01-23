@@ -11,7 +11,7 @@
 #include "define.h"
 #include "common.h"
 #include "i2c.h" 
-#include "sfa3x_i2c.h"
+#include "sfa3x.h"
 
 /*
  * TO USE CONSOLE OUTPUT (PRINTF) YOU MAY NEED TO ADAPT THE INCLUDE ABOVE OR
@@ -30,23 +30,35 @@ uint8_t sensorStatus = 0;       // Sensor' status
 unsigned char device_marking[32];
 // 2024.11.14 Initialize the result.
 /** Define DIR_PATH "/home/pi/works/upload_file" and worrk file name is testWork.csv **/
-char work_file[] = "testWork.csv";
+char work_file[] = "testWork_test.csv";
 char setup_file[] = "config";
 char dir_path[] = "/home/pi/works/upload_file/";
 char location_name[] = "株式会社A";
 char fname[128];
 
+/** About tm structure
+* struct tm {
+*  int tm_sec;      // 秒 [0-61] 最大2秒までのうるう秒を考慮
+*  int tm_min;      // 分 [0-59] 
+*  int tm_hour;     // 時 [0-23] 
+*  int tm_mday;     // 日 [1-31]
+*  int tm_mon;      // 月 [0-11] 0から始まることに注意
+*  int tm_year;     // 年 [1900からの経過年数]
+*  int tm_wday;     // 曜日 [0:日 1:月 ... 6:土]
+*  int tm_yday;     // 年内の通し日数 [0-365] 0から始まることに注意
+*  int tm_isdst;    // 夏時間が無効であれば 0
+* };
+**/
+struct tm *local;
+
 LOCATION Place;         // Monitor site information, name and number of sensor point's.
 SENSOR Sensor[16];      // Sensor's information whish is located at the monitor site.
 
-/** Initialize Sensor information the sample monitor site. **/
+/// Initialize Sensor information the sample monitor site.
 Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度", 0.0, 0.0, 0.0};
 
+
 int main(int argc, char *argv[]){  
-    time_t timer;       // For measurement system base timer.
-    struct tm *local;
-    int year, month, day, hour, minute, second;
-    
     static uint8_t point_num = 0;
     
     /** @2024.11.13 Open work folder which names uploadfile. **/
@@ -60,21 +72,21 @@ int main(int argc, char *argv[]){
         /** Open i2c interface to connect sensirion formaldehyde sensor **/
         i2c_hal_init();
         /** Make reset sensor hardware #139 in sfa3x_i2c.c **/
-        if (sfa3x_device_reset() != NO_ERROR){
+        if (DeviceReset() != NO_ERROR){
             printf("Failed to make Sensor reset.\nTerminated!\n");
             sensorStatus = FAILED_MAKE_RESET;
             return -1;
         }
         /** Confirm device marking function is #116 in sfa3x_i2c.c**/
-        if (sfa3x_get_device_marking(&device_marking[0], sizeof(device_marking)) != NO_ERROR) {
+        if (GetDeviceMarking(&device_marking[0], sizeof(device_marking)) != NO_ERROR) {
             printf("Failed to get Device Marking\n\n");
             sensorStatus = FAILED_GET_DEVICEMARK;
             return -1;
         }
         /** Opening message!! **/
-        printf("Welcome! Sensor which serial code is %s.\n\n", device_marking);
+        printf("Welcome!\nSensor serial-code is %s.\n\n", device_marking);
         
-        if (sfa3x_start_continuous_measurement() != NO_ERROR) {
+        if (StartContinuousMeasurement() != NO_ERROR) {
             printf("Failed to set senseor continuous_measurement()\n");
             return -1;
         }
@@ -88,12 +100,14 @@ int main(int argc, char *argv[]){
 
         /* main loop */
         for (;;) {
-            static bool flag = 0;
-            static bool rept = 0;
+            static bool flag = 0, rept = 0;
+            time_t timer;
+            int year, month, day, hour, minute, second;
+            char dateNow[32], timeNow[16], today[48];
             
             sleep(1);
-            // 2023.11.24 Get the latest time
-            timer = time(NULL);
+            // 2023.11.24 Get the latest tim
+            timer = time(NULL);  // For measurement system base timer.
             local = localtime(&timer);  // Convert to localtime
             // 年月日と時分秒をtm構造体の各パラメタから変数に代入
             year = local->tm_year + 1900;   // Because year count starts at 1900
@@ -101,23 +115,24 @@ int main(int argc, char *argv[]){
             day = local->tm_mday;
             hour = local->tm_hour;
             minute = local->tm_min;
-            second = local->tm_sec;
-        
-            // Original is a wait around 10000ms before Sensor operating
-            // wait around 5s before Sensor operation
+            second = local->tm_sec;            
+            sprintf(dateNow, "%d-%d-%d", year, month, day);
+            sprintf(timeNow, "%d:%d:%d", hour, minute, second);
+            sprintf(today, "%s %s", dateNow, timeNow);
+
             if(second % 5 == 0){
                 if(rept == 0){
                     rept = 1;
                     // Display current time's information on console.
-                    printf("%d-%d-%d @%d:%d:%d\n", year, month, day, hour, minute, second);
-                    /** Read Measure function is #134 in sfa3x_i2c.c**/
+                    printf("%s @%s\n", dateNow, timeNow);
+                    // Read Measure function is #126 in sfa3x_i2c.c
                     result = ReadMeasure(result);
                     printf("%s\n", location_name);
                     printf("%s: %.1f ppb\n", result.gasName, result.gas);
                     printf("%s: %.2f %%RH\n", result.humid, result.humidity);
                     printf("%s: %.2f °C\n\n", result.temp, result.temperature);
                 }
-                if(second == 0 && flag == 0){
+                if((int)second == 0 && flag == 0){
                     flag = 1;
                     FILE *fp = fopen(fname,"w");
                     if (fp == NULL){
@@ -125,11 +140,11 @@ int main(int argc, char *argv[]){
                         return -1;
                     }
                     fprintf(fp, "measured_date,measured_value,sensor,place\n");
-                    fprintf(fp, "%d-%d-%d %d:%d:%d,%0.2f,%s,%s\n", year, month, day, hour, minute, second, result.gas, result.gasName, location_name);
-                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s,%s\n", year, month, day, hour, minute, second, result.humidity, result.humid, location_name);
-                    fprintf(fp, "%d-%d-%d %d:%d:%d,%.2f,%s,%s\n", year, month, day, hour, minute, second, result.temperature, result.temp, location_name);        
+                    fprintf(fp, "%s,%0.2f,%s,%s\n", today, result.gas, result.gasName, location_name);
+                    fprintf(fp, "%s,%.2f,%s,%s\n", today, result.humidity, result.humid, location_name);
+                    fprintf(fp, "%s,%.2f,%s,%s\n", today, result.temperature, result.temp, location_name);        
                     fclose(fp);
-                    printf("Saved:~ %s\n\n", fname);            
+                    printf("Save data was written in %s\n\n", fname);            
                 }
             }else{
                 rept = 0;
@@ -238,10 +253,10 @@ int main(int argc, char *argv[]){
         *  Frpm creating a setup file. **/
         char point[128];
         char ans[5];
-        
+
         if(strcmp(argv[1], "setup") == 0){
             printf("Let's make Sensor settings.\n\n");
-            
+            /*
             // 2023.11.24 Get the latest time
             timer = time(NULL);
             // Convert to localtime
@@ -253,7 +268,7 @@ int main(int argc, char *argv[]){
             hour = local->tm_hour;
             minute = local->tm_min;
             second = local->tm_sec;
-            
+            */
             /** Set place **/
             while(strcmp(ans, "y") != 0){
                 printf("サイト名を設定してください... ");
@@ -272,7 +287,7 @@ int main(int argc, char *argv[]){
                 printf("The file: %s is NOT able to open.\n", fname);
                 return -1;
             }
-            fprintf(fp, "Set_up data @%d-%2d-%2d %2d:%2d\n",year, month, day, hour, minute);
+            //fprintf(fp, "Set_up data @%d-%2d-%2d %2d:%2d\n",year, month, day, hour, minute);
             fprintf(fp, "place,%s\n",Place.name);
             printf("\"%s\"をサイト名として登録しました.\n\n", Place.name);
                 
@@ -306,12 +321,11 @@ int8_t ReadDummy(){
     float data1 = 0.0, data2 = 0.0, data3 = 0.0;
 
     // It may be adjust the measurement interval around for 500ms
-    //usleep(500000); // Original software settings.
-    if(sfa3x_read_measured_values(&data1, &data2, &data3) != 0){
+    usleep(500000); // Original software settings.
+    if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
         printf("Error: Failed to read sensor data\n");
         return -1;
     }
-    printf("Success: to make a dummy read\n\n");
     return 0;    
 }
 
@@ -365,5 +379,3 @@ int8_t OverWriteFile(const char* path)
     printf("OverWrite_#402 \"%s\" is overwerwritten.\n", path);
     return res;
 }
-
-

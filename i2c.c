@@ -1,12 +1,9 @@
 /*
  * Copyright (c) 2024
  */
-/* Enable usleep function */
-
 //#define _DEFAULT_SOURCE
 #include <stdio.h>  // printf(), strcmp(), fopen()
 #include <fcntl.h>
-#include <stdio.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -17,7 +14,8 @@
 #define I2C_DEVICE_PATH "/dev/i2c-1"
 
 /** The following define was taken from i2c-dev.h. Alternatively the header file
- * can be included. The define was added in Linux v3.10 and never changed since then. */
+ * can be included. The define was added in Linux v3.10 and never changed since then. 
+ */
 #define I2C_SLAVE 0x0703
 #define I2C_WRITE_FAILED -1
 #define I2C_READ_FAILED -1
@@ -27,10 +25,10 @@ static uint8_t i2c_address = 0;
 
 /** Initialize all hard- and software components that are needed for the I2C communication. */
 void i2c_hal_init(void) {
-    /* open i2c adapter */
+    // open i2c adapter
     i2c_device = open(I2C_DEVICE_PATH, O_RDWR);
     if (i2c_device == -1)
-        return; /* no error handling */
+        return; // no error handling
 }
 /** Execute one write transaction on the I2C bus, sending a given number of bytes. 
  * The bytes in the supplied buffer must be sent to the given address. 
@@ -56,7 +54,6 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
  * @param data    pointer to the buffer where the data is to be stored
  * @param count   number of bytes to read from I2C and store in the buffer
  * @returns 0 on success, error code otherwise. */
-// 2 times in i2c.c @2024.12.23
 int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
     if (i2c_address != address) {
         ioctl(i2c_device, I2C_SLAVE, address);
@@ -67,17 +64,6 @@ int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
     }
     return 0;
 }
-
-uint16_t i2c_add_command_to_buffer(uint8_t* buffer, uint16_t offset, uint16_t command) {
-    buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
-    return offset;
-}
-
-int16_t i2c_write_data(uint8_t address, const uint8_t* data, uint16_t data_length) {
-    return i2c_hal_write(address, data, data_length);
-}
-
 // 7 times @2024.12.23
 uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count) {
     uint16_t current_byte;
@@ -185,33 +171,4 @@ uint16_t i2c_add_uint32_t_to_buffer(uint8_t* buffer, uint16_t offset, uint32_t d
     buffer[offset] = i2c_generate_crc(&buffer[offset - WORD_SIZE], WORD_SIZE);
     offset++;
     return offset;
-}
-
-// 2 times in sfa3x @2024.12.23
-int16_t i2c_read_data_inplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
-    int16_t error;
-    uint16_t i, j;
-    uint16_t size = (expected_data_length / WORD_SIZE) *
-                    (WORD_SIZE + CRC8_LEN);
-
-    if (expected_data_length % WORD_SIZE != 0) {
-        return BYTE_NUM_ERROR;
-    }
-
-    error = i2c_hal_read(address, buffer, size);
-    if (error) {
-        return error;
-    }
-
-    for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
-
-        error = i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE]);
-        if (error) {
-            return error;
-        }
-        buffer[j++] = buffer[i];
-        buffer[j++] = buffer[i + 1];
-    }
-
-    return NO_ERROR;
 }
