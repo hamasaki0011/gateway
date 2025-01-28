@@ -36,18 +36,13 @@ int16_t GetDeviceMarking(unsigned char* device_marking, uint8_t device_marking_s
  * @return 0 on success, an error code otherwise */
 int16_t StartContinuousMeasurement(void);
 
-/** ReadMeasuredValuesTicks() - Returns the new measurement results as integers.
- * @param hcho Formaldehyde concentration in ppb with a scaling of 5.
- * @param humidity Relative humidity in % RH with a scaling of 100.
- * @param temperature Temperature in degrees Celsius with a scaling of 200.
- * @return 0 on success, an error code otherwise */
-int16_t ReadMeasuredValuesTicks(int16_t* hcho, int16_t* humidity, int16_t* temperature);
 /** ReadMeasuredValues() - Returns the new measurement results as float.
  * @param hcho Formaldehyde concentration in ppb.
  * @param humidity Relative humidity in % RH.
  * @param temperature Temperature in degrees Celsius.
  * @return 0 on success, an error code otherwise */
 int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature);
+int8_t BlankRead(void);
 Sensor_data ReadMeasure(Sensor_data r);
 
 /**

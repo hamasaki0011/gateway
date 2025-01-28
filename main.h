@@ -10,6 +10,8 @@
  * accordingly. Please make sure to define int64_t and uint64_t.*/
 #include <stdint.h>
 
+#include "foperation.h"
+
 /** define structure **/
 /** tm structure
 * struct tm {
@@ -43,24 +45,7 @@ typedef struct{
     float humidity;
     float temperature;
 }Sensor_data;
-
-/** DummyRead function **/
-int8_t ReadDummy(void);
 LOCATION SetLocationName(char*, int8_t);
 SENSOR SetSensor(char*, uint8_t, char*);
-
-/*
- * Confirm the file exists or Not.
- * path:   file path.
- * return: 0: exist, 1: not exists.
-*/
-int8_t AddFile(const char*);
-
-/*
- * Overwrite the file exists or Not.
- * path:   file path.
- * return: 0: exist, 1: not exists.
-*/
-int8_t OverWriteFile(const char*);
 
 #endif /* MAIN_H */
