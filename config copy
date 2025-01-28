@@ -1,0 +1,5 @@
+Set_up data @2024-11-22
+header,4,株式会社A,3
+point,5,ホルムアルデヒド濃度,1,ppb
+point,5,相対湿度,2,%RH
+point,5,周囲温度,3,℃

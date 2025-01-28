@@ -8,6 +8,8 @@
 #include "main.h"
 #include "common.h"
 
+int8_t IsExistFile(const char*);
+
 /** Confirm the file exists or Not.
  * path:   file path.
  * return: 0: exist, 1: not exists.*/

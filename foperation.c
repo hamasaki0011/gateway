@@ -11,7 +11,18 @@
 #include "device.h"
 #include "main.h"
 
-#define CONFIG_LINE             512  // Max. value of number of bytes in line in config file.
+
+
+/** Confirm "config" file is exist or not.
+ *  path:   currentPath
+    return value: Not 0 means exist, 0 means Not exist. */
+int8_t IsExistFile(const char* path)
+{
+    FILE* f = fopen(path, "r");
+    if (f == NULL) return 0;
+    fclose(f);
+    return 1;
+}
 
 /** Confirm the file exists or Not.
  * path:   file path.

@@ -10,21 +10,26 @@
 #include "device.h"
 #include "main.h"
 
+#define PATH_SIZE       256
+#define CONFIG_FILE     "config"
+#define CONFIG_LINE     512  // Max. value of number of bytes in line in config file.
+
 /** Linux specific configuration.
  *  Adjust the following define to the device path of the sensor. */
 #define I2C_DEVICE_PATH         "/dev/i2c-1"
 
-#define CONFIG_LINE             512  // Max. value of number of bytes in line in config file.
 #define FAILED_MAKE_RESET       10
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
 
+
 uint8_t sensorStatus = 0;       // Sensor' status
 
-/** Define DIR_PATH "/home/pi/works/upload_file" and worrk file name is testWork.csv **/
+/** Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv **/
 char work_file[] = "testWork_test.csv";
 char setup_file[] = "config";
 char dir_path[] = "/home/pi/works/upload_file/";
+char currentPath[PATH_SIZE];
 char location_name[] = "株式会社A";
 char fname[128];
 unsigned char deviceMarking[32];
@@ -33,20 +38,50 @@ struct tm *local;
 
 LOCATION Place;     // Monitor site information, name and number of sensor point's.
 SENSOR Sensor[16];  // Sensor's information whish is located at the monitor site.
-
 /// Initialize Sensor information the sample monitor site.
 Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度", 0.0, 0.0, 0.0};
 
 int main(int argc, char *argv[]){  
     static uint8_t point_num = 0;
+
+    FILE *fp; //FILE structure.
+    char fileName[512];
+    char str[CONFIG_LINE];
+
+    /** Get the current path */
+    getcwd(currentPath, PATH_SIZE);
+    strcat(strcat(fileName, strcat(currentPath, "/")), CONFIG_FILE);
     
+    printf("fileName is %s.\n", fileName);
+    printf("fileName is %d.\n", sizeof(fileName));
+
+    if(IsExistFile(fileName)){
+        printf("The file [%s] does exist.\n", fileName);
+        fp = fopen(fileName, "r");
+        if(fp == NULL){
+            printf("%s file NOT open!", fileName);
+            return -1;
+        }
+        while(fgets(str, CONFIG_LINE, fp) != NULL){
+            printf("%s\n", str);
+        }
+        
+    }
+    else{ 
+        printf("The file does Not exist.\n");
+        printf("file name is %s\n", fileName);
+    }
+    fclose(fp);
+
     /** @2024.11.13 Open work folder which includes uploadfile. **/
-    DIR *dir = opendir(dir_path);
+    //DIR *dir = opendir(dir_path);
+    DIR *dir = opendir(currentPath);
     if (!dir){ 
         printf("Missing \"up_load\" directory.\nTerminated!\n");
         return -1;
     }
-    
+    printf("Yes, I'm here\n");
+
     /** Normal operation. **/
     if(argc <= 1){
         /// Reset sensor board hardware.
@@ -131,7 +166,7 @@ int main(int argc, char *argv[]){
             //if (closedir(dir)) printf("Failed to close directory.\n");
             //printf("main_#125 Close directory upload_file\n");
         }
-     
+    
         // To finish this application
         // What should we do at the next time to start application.
         /*
@@ -153,7 +188,7 @@ int main(int argc, char *argv[]){
         
         printf("main_#180 argc = %d, argv = %s\n", argc, argv[1]);
         
-        // In case of specifiy the setup file name.
+        // In case of specify the setup file name.
         if(argc == 3){
             char* ans;              
             char fl[128];
@@ -161,7 +196,7 @@ int main(int argc, char *argv[]){
             ans = (char *)malloc(sizeof(char));
             printf("ファイル名\"%s\"を設定ファイルとします\n", argv[2]);
             printf("OKの場合は\"y\",変更する場合は\"n\"... ");
-            scanf("%s", ans);
+            scanf("%c", ans);
             
             if(!strcmp(ans, "y")){
                 strcat(strcat(fname, dir_path), argv[2]);
@@ -226,7 +261,7 @@ int main(int argc, char *argv[]){
     
     }else{
         /** Setup operation class 2.
-        *  Frpm creating a setup file. **/
+        *  From creating a setup file. **/
         char point[128];
         char ans[5];
 
