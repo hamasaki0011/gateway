@@ -9,6 +9,7 @@
 #include <unistd.h>     // read(), write(), usleep()
 
 #include "common.h"
+//#include "foperation.h"
 #include "device.h"
 #include "main.h"
 
@@ -43,7 +44,7 @@ int16_t DeviceReset(void) {
     return NO_ERROR;
 }
 
-int16_t GetDeviceMarking(unsigned char* device_marking, uint8_t device_marking_size) {
+int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_size) {
     int16_t error;
     uint8_t buffer[48];
     uint16_t offset = 0;
@@ -63,7 +64,7 @@ int16_t GetDeviceMarking(unsigned char* device_marking, uint8_t device_marking_s
     if (error) {
         return error;
     }
-    copy_bytes(&buffer[0], device_marking, device_marking_size);
+    copy_bytes(&buffer[0], deviceMarking, deviceMarking_size);
     return NO_ERROR;
 }
 
@@ -82,32 +83,6 @@ int16_t StartContinuousMeasurement(void) {
     }
     usleep(1000);
     return NO_ERROR;    // NO_ERROR: 0 in common.h
-}
-
-int16_t ReadMeasuredValuesTicks(int16_t* hcho, int16_t* humidity, int16_t* temperature) {
-    int16_t error;
-    uint8_t buffer[9];
-    uint16_t offset = 0;
-    uint16_t command = 0x327;
-    
-    buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
-
-    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    if (error) {
-        return error;
-    }
-    usleep(5000);
-    error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
-    if (error) {
-        return error;
-    }    
-
-    *hcho = (int16_t)((uint16_t)buffer[0] << 8 | (uint16_t)buffer[1]);
-    *humidity = (int16_t)((uint16_t)buffer[2] << 8 | (uint16_t)buffer[3]);
-    *temperature = (int16_t)((uint16_t)buffer[4] << 8 | (uint16_t)buffer[5]);
-
-    return NO_ERROR;
 }
 
 int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
@@ -143,10 +118,21 @@ int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
     return NO_ERROR;
 }
 
+int8_t BlankRead(){
+    float data1 = 0.0, data2 = 0.0, data3 = 0.0;
+
+    // It may be adjust the measurement interval around for 500ms
+    usleep(500000); // Original software settings.
+    if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+        printf("Error: Failed to read sensor data\n");
+        return -1;
+    }
+    return 0;    
+}
+
 Sensor_data ReadMeasure(Sensor_data r){
     float data1, data2, data3;
     
-    /// ReadMeasuredValues(&data1, &data2, &data3)
     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
         r.gas = 0.0;
         r.humidity = 0.0;
@@ -159,7 +145,6 @@ Sensor_data ReadMeasure(Sensor_data r){
     }    
     return r;
 }
-
 
 int16_t StopMeasurement(void) {
     int16_t error;
@@ -179,7 +164,6 @@ int16_t StopMeasurement(void) {
     return NO_ERROR;
 }
 
-
 int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
     int16_t error;
     uint16_t i, j;
@@ -188,7 +172,6 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
     if (expected_data_length % WORD_SIZE != 0) {
         return BYTE_NUM_ERROR;
     }
-
     error = i2c_hal_read(address, buffer, size);
     if (error) {
         return error;
@@ -203,10 +186,12 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
         buffer[j++] = buffer[i];
         buffer[j++] = buffer[i + 1];
     }
-
     return NO_ERROR;
 }
+
+
 /** Initialize all hard- and software components that are needed for the I2C communication. */
+/*
 void i2c_hal_init(void) {
     // open i2c adapter
     i2c_device = open(I2C_DEVICE_PATH, O_RDWR);
@@ -214,6 +199,7 @@ void i2c_hal_init(void) {
     //    return; // no error handling
     return; // no error handling
 }
+*/
 /** Execute one write transaction on the I2C bus, sending a given number of bytes. 
  * The bytes in the supplied buffer must be sent to the given address. 
  * If the slave device does not acknowledge any of the bytes, an error shall be returned.
@@ -248,6 +234,7 @@ int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
     }
     return 0;
 }
+
 // 7 times @2024.12.23
 uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count) {
     uint16_t current_byte;

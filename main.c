@@ -27,7 +27,7 @@ char setup_file[] = "config";
 char dir_path[] = "/home/pi/works/upload_file/";
 char location_name[] = "株式会社A";
 char fname[128];
-unsigned char device_marking[32];
+unsigned char deviceMarking[32];
 
 struct tm *local;
 
@@ -40,10 +40,10 @@ Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲�
 int main(int argc, char *argv[]){  
     static uint8_t point_num = 0;
     
-    /** @2024.11.13 Open work folder which names uploadfile. **/
+    /** @2024.11.13 Open work folder which includes uploadfile. **/
     DIR *dir = opendir(dir_path);
     if (!dir){ 
-        printf("Can't find \"up_load\" directory.\nTerminated!\n");
+        printf("Missing \"up_load\" directory.\nTerminated!\n");
         return -1;
     }
     
@@ -55,12 +55,12 @@ int main(int argc, char *argv[]){
             return -1;
         }
         /// Obtain the device marking.
-        if (GetDeviceMarking(&device_marking[0], sizeof(device_marking)) != NO_ERROR) {
+        if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
             printf("Failed to get Device Marking\nTerminated!\n");
             return -1;
         }
         /// Opening message.
-        printf("Welcome!\nSerial-code is %s.\n\n", device_marking);
+        printf("Welcome!\nSerial-code is %s.\n\n", deviceMarking);
         
         if (StartContinuousMeasurement() != NO_ERROR) {
             printf("Failed to set senseor continuous_measurement()\nTerminated!\n");
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]){
         }        
         /** At the beginning, makes a dummy read once. */
         usleep(500000);
-        ReadDummy();
+        BlankRead();
     
         /** previous dir control and prepare working directory.**/
         strcat(strcat(fname, dir_path), work_file);
@@ -98,12 +98,11 @@ int main(int argc, char *argv[]){
             if(second % 5 == 0){
                 if(rept == 0){
                     rept = 1;
-                    // Display current time's information on console.
+                    /// Display current time' information on console.
                     printf("%s @%s\n", dateNow, timeNow);
                     
-                    /// ReadMeasure() is #135 in device.c
+                    /// Read sensor' data and display on the screen.
                     result = ReadMeasure(result);
-                    
                     printf("%s\n", location_name);
                     printf("%s: %.1f ppb\n", result.gasName, result.gas);
                     printf("%s: %.2f %%RH\n", result.humid, result.humidity);
@@ -294,18 +293,6 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-int8_t ReadDummy(){
-    float data1 = 0.0, data2 = 0.0, data3 = 0.0;
-
-    // It may be adjust the measurement interval around for 500ms
-    usleep(500000); // Original software settings.
-    if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
-        printf("Error: Failed to read sensor data\n");
-        return -1;
-    }
-    return 0;    
-}
-
 LOCATION SetLocationName(char* name, int8_t num) {
     LOCATION p;
     
@@ -321,38 +308,4 @@ SENSOR SetSensor(char* name, uint8_t id, char* unit) {
     s.id = id;
     strcpy(s.unit, unit);
     return s;
-}
-
-/*
- * Confirm the file exists or Not.
- * path:   file path.
- * return: 0: exist, 1: not exists.
-*/
-int8_t AddFile(const char* path)
-{
-    FILE* fp = fopen(path, "a+");
-    if (fp == NULL) {
-        return 1;
-    }
-    fclose(fp);
-    return 0;
-}
-
-/*
- * Overwrite the file exists or Not.
- * path:   file path.
- * return: 0: exist, 1: not exists.
-*/
-int8_t OverWriteFile(const char* path)
-{
-    int8_t res = 0;
-
-    FILE* fp = fopen(path, "w+");
-    if (fp == NULL) {
-        printf("OverWrite_#398 Failed overwrite \"%s\".\n", path);
-        res = -1;
-    }
-    fclose(fp);
-    printf("OverWrite_#402 \"%s\" is overwerwritten.\n", path);
-    return res;
 }
