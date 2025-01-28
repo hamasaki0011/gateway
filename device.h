@@ -1,25 +1,74 @@
 /*
  * Copyright (c) 2024
  */
-#ifndef I2C_H
-#define I2C_H
 
-#include "define.h"
+#ifndef DEVICE_H
+#define DEVICE_H
+
+#include "main.h"
 #include "common.h"
-
-#define CRC_ERROR 1
-#define I2C_BUS_ERROR 2
-#define I2C_NACK_ERROR 3
-#define BYTE_NUM_ERROR 4
-
-#define CRC8_POLYNOMIAL 0x31
-#define CRC8_INIT 0xFF
-#define CRC8_LEN 1
 
 #define COMMAND_SIZE 2
 #define WORD_SIZE 2
 #define NUM_WORDS(x) (sizeof(x) / WORD_SIZE)
 #define MAX_BUFFER_WORDS 32
+
+#define CRC_ERROR 1
+#define I2C_BUS_ERROR 2
+#define I2C_NACK_ERROR 3
+#define BYTE_NUM_ERROR 4
+#define CRC8_POLYNOMIAL 0x31
+#define CRC8_INIT 0xFF
+#define CRC8_LEN 1
+
+/** DeviceReset() - Executes a reset on the device.
+ * @return 0 on success, an error code otherwise */
+int16_t DeviceReset(void);
+
+/** GetDeviceMarking() - Read the device marking string from the device.
+ * @param device_marking ASCII string containing the serial number. The string
+ * has the null-termination character included and is at most 32 bytes long.
+ * @return 0 on success, an error code otherwise */
+int16_t GetDeviceMarking(unsigned char* device_marking, uint8_t device_marking_size);
+
+/** StartContinuousMeasurement() - Starts continuous measurement in polling mode.
+ * @note This command is only available in idle mode.
+ * @return 0 on success, an error code otherwise */
+int16_t StartContinuousMeasurement(void);
+
+/** ReadMeasuredValuesTicks() - Returns the new measurement results as integers.
+ * @param hcho Formaldehyde concentration in ppb with a scaling of 5.
+ * @param humidity Relative humidity in % RH with a scaling of 100.
+ * @param temperature Temperature in degrees Celsius with a scaling of 200.
+ * @return 0 on success, an error code otherwise */
+int16_t ReadMeasuredValuesTicks(int16_t* hcho, int16_t* humidity, int16_t* temperature);
+/** ReadMeasuredValues() - Returns the new measurement results as float.
+ * @param hcho Formaldehyde concentration in ppb.
+ * @param humidity Relative humidity in % RH.
+ * @param temperature Temperature in degrees Celsius.
+ * @return 0 on success, an error code otherwise */
+int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature);
+Sensor_data ReadMeasure(Sensor_data r);
+
+/**
+ * sfa3x_stop_measurement() - Stops the measurement mode and returns to idle
+ * mode.
+ * @note This command is only available in measurement mode.
+ * @return 0 on success, an error code otherwise */
+int16_t StopMeasurement(void);
+                                
+int8_t SendData(int16_t sock, Sensor_data h);
+
+/** i2c_read_data_inplace() - Reads data from the Sensor.
+ * @param address              Sensor I2C address
+ * @param buffer               Allocated buffer to store data as bytes. Needs
+ *                             to be big enough to store the data including
+ *                             CRC. Twice the size of data should always suffice.
+ * @param expected_data_length Number of bytes to read (without CRC). Needs
+ *                             to be a multiple of WORD_SIZE,
+ *                             otherwise the function returns BYTE_NUM_ERROR.
+ * @return            NO_ERROR on success, an error code otherwise */
+int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length);
 
 /** Initialize all hardware and software components that are needed for the I2C communication. */
 void i2c_hal_init(void);
@@ -100,4 +149,4 @@ int16_t i2c_read_cmd(uint8_t address, uint16_t cmd, uint16_t* data_words, uint16
  * @return        Offset of next free byte in the buffer after writing the data. */
 uint16_t i2c_add_uint32_t_to_buffer(uint8_t* buffer, uint16_t offset, uint32_t data);
 
-#endif /* I2C_H */
+#endif /* DEVICE_H */
