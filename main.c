@@ -1,62 +1,41 @@
-#include <stdio.h>      // For standard operation such as printf(), strcmp(), fopen()
-#include <stdlib.h>     // For library like a malloc() which is memory opearation.
+#include <stdio.h>      // printf(), strcmp(), fopen()
+#include <stdlib.h>     // malloc() 
 #include <string.h>     // memset()
-#include <unistd.h>     // For sleep()/usleep(), for close
-#include <time.h>
+#include <unistd.h>     // sleep()/usleep() and close(), open(), read(), write()
+#include <time.h>       // time()
 #include <dirent.h>     // For directory operation.
 #include <stdbool.h>    // For bool operation.
-#include <fcntl.h>
-#include <sys/ioctl.h>
 
-#include "define.h"
 #include "common.h"
-#include "i2c.h" 
-#include "sfa3x.h"
+#include "device.h"
+#include "main.h"
 
-/*
- * TO USE CONSOLE OUTPUT (PRINTF) YOU MAY NEED TO ADAPT THE INCLUDE ABOVE OR
- * DEFINE IT ACCORDING TO YOUR PLATFORM:
- * #define printf(...)
- */ 
-        
-/** Linux specific configuration. Adjust the following define to the device path of the sensor. */
-#define I2C_DEVICE_PATH "/dev/i2c-1"
+/** Linux specific configuration.
+ *  Adjust the following define to the device path of the sensor. */
+#define I2C_DEVICE_PATH         "/dev/i2c-1"
+
 #define CONFIG_LINE             512  // Max. value of number of bytes in line in config file.
 #define FAILED_MAKE_RESET       10
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
 
 uint8_t sensorStatus = 0;       // Sensor' status
-unsigned char device_marking[32];
-// 2024.11.14 Initialize the result.
+
 /** Define DIR_PATH "/home/pi/works/upload_file" and worrk file name is testWork.csv **/
 char work_file[] = "testWork_test.csv";
 char setup_file[] = "config";
 char dir_path[] = "/home/pi/works/upload_file/";
 char location_name[] = "株式会社A";
 char fname[128];
+unsigned char device_marking[32];
 
-/** About tm structure
-* struct tm {
-*  int tm_sec;      // 秒 [0-61] 最大2秒までのうるう秒を考慮
-*  int tm_min;      // 分 [0-59] 
-*  int tm_hour;     // 時 [0-23] 
-*  int tm_mday;     // 日 [1-31]
-*  int tm_mon;      // 月 [0-11] 0から始まることに注意
-*  int tm_year;     // 年 [1900からの経過年数]
-*  int tm_wday;     // 曜日 [0:日 1:月 ... 6:土]
-*  int tm_yday;     // 年内の通し日数 [0-365] 0から始まることに注意
-*  int tm_isdst;    // 夏時間が無効であれば 0
-* };
-**/
 struct tm *local;
 
-LOCATION Place;         // Monitor site information, name and number of sensor point's.
-SENSOR Sensor[16];      // Sensor's information whish is located at the monitor site.
+LOCATION Place;     // Monitor site information, name and number of sensor point's.
+SENSOR Sensor[16];  // Sensor's information whish is located at the monitor site.
 
 /// Initialize Sensor information the sample monitor site.
 Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度", 0.0, 0.0, 0.0};
-
 
 int main(int argc, char *argv[]){  
     static uint8_t point_num = 0;
@@ -67,32 +46,28 @@ int main(int argc, char *argv[]){
         printf("Can't find \"up_load\" directory.\nTerminated!\n");
         return -1;
     }
+    
     /** Normal operation. **/
     if(argc <= 1){
-        /** Open i2c interface to connect sensirion formaldehyde sensor **/
-        i2c_hal_init();
-        /** Make reset sensor hardware #139 in sfa3x_i2c.c **/
+        /// Reset sensor board hardware.
         if (DeviceReset() != NO_ERROR){
-            printf("Failed to make Sensor reset.\nTerminated!\n");
-            sensorStatus = FAILED_MAKE_RESET;
+            printf("Device reset failed,...\nTerminated!\n");
             return -1;
         }
-        /** Confirm device marking function is #116 in sfa3x_i2c.c**/
+        /// Obtain the device marking.
         if (GetDeviceMarking(&device_marking[0], sizeof(device_marking)) != NO_ERROR) {
-            printf("Failed to get Device Marking\n\n");
-            sensorStatus = FAILED_GET_DEVICEMARK;
+            printf("Failed to get Device Marking\nTerminated!\n");
             return -1;
         }
-        /** Opening message!! **/
-        printf("Welcome!\nSensor serial-code is %s.\n\n", device_marking);
+        /// Opening message.
+        printf("Welcome!\nSerial-code is %s.\n\n", device_marking);
         
         if (StartContinuousMeasurement() != NO_ERROR) {
-            printf("Failed to set senseor continuous_measurement()\n");
+            printf("Failed to set senseor continuous_measurement()\nTerminated!\n");
             return -1;
-        }
-        /** wait around 500ms before starting to read data */
+        }        
+        /** At the beginning, makes a dummy read once. */
         usleep(500000);
-        /** At the beginning, makes a dummy read once. **/
         ReadDummy();
     
         /** previous dir control and prepare working directory.**/
@@ -105,7 +80,7 @@ int main(int argc, char *argv[]){
             int year, month, day, hour, minute, second;
             char dateNow[32], timeNow[16], today[48];
             
-            sleep(1);
+            usleep(500000);
             // 2023.11.24 Get the latest tim
             timer = time(NULL);  // For measurement system base timer.
             local = localtime(&timer);  // Convert to localtime
@@ -125,8 +100,10 @@ int main(int argc, char *argv[]){
                     rept = 1;
                     // Display current time's information on console.
                     printf("%s @%s\n", dateNow, timeNow);
-                    // Read Measure function is #126 in sfa3x_i2c.c
+                    
+                    /// ReadMeasure() is #135 in device.c
                     result = ReadMeasure(result);
+                    
                     printf("%s\n", location_name);
                     printf("%s: %.1f ppb\n", result.gasName, result.gas);
                     printf("%s: %.2f %%RH\n", result.humid, result.humidity);
