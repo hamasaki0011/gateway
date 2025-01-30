@@ -13,16 +13,62 @@
 
 
 
+
+
 /** Confirm "config" file is exist or not.
  *  path:   currentPath
     return value: Not 0 means exist, 0 means Not exist. */
-int8_t IsExistFile(const char* path)
+
+/*
+void SetupConfig(const char fname)
 {
-    FILE* f = fopen(path, "r");
-    if (f == NULL) return 0;
-    fclose(f);
-    return 1;
+    char str[LINE_SIZE];
+    FILE *fp; //FILE structure.
+
+    if(getcwd(currentPath, PATH_SIZE) == NULL){
+        printf("カレントディレクトリーが取得できません.\nプログラムを終了します.\n");
+        return -1;    
+    }
+    // strcpy(configFileName, currentPath);
+    strcpy(fname, currentPath);
+    // strcat(strcat(configFileName, "/"), CONFIG_FILE);
+    strcat(strcat(fname, "/"), CONFIG_FILE);
+
+    // fp = fopen(configFileName, "r");
+    fp = fopen(fname, "r"); 
+    if (fp == NULL){
+        // printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", configFileName);
+        printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", fname);
+        return -1;
+    }
+    while(fgets(str, LINE_SIZE, fp) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(str, ",");     // First
+        if(strcmp(ptr, "Site") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(Site.name, ptr);
+            
+            ptr = strtok(NULL, ",");    // Number
+            Site.num = atoi(ptr);
+            
+        }else{
+            ptr = strtok(NULL, ",");    // Sensor ID
+            sensorID[id] = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(sensorName[id], ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(sensorUnit[id], ptr);
+
+            id++;
+        }
+    }
+    fclose(fp);
 }
+*/
 
 /** Confirm the file exists or Not.
  * path:   file path.
@@ -50,6 +96,6 @@ int8_t OverWriteFile(const char* path)
         res = -1;
     }
     fclose(fp);
-    printf("OverWrite_#402 \"%s\" is overwerwritten.\n", path);
+    printf("OverWrite_#402 \"%s\" is overwritten.\n", path);
     return res;
 }

@@ -8,7 +8,7 @@
 #include "main.h"
 #include "common.h"
 
-int8_t IsExistFile(const char*);
+void SetupConfig(const char);
 
 /** Confirm the file exists or Not.
  * path:   file path.

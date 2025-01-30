@@ -1,77 +1,121 @@
 #include <stdio.h>      // printf(), strcmp(), fopen()
-#include <stdlib.h>     // malloc() 
-#include <string.h>     // memset()
+#include <stdlib.h>     // malloc(), atoi()
+#include <string.h>     // memset(), strtok()
 #include <unistd.h>     // sleep()/usleep() and close(), open(), read(), write()
-#include <time.h>       // time()
 #include <dirent.h>     // For directory operation.
+#include <time.h>       // time()
 #include <stdbool.h>    // For bool operation.
 
 #include "common.h"
 #include "device.h"
+#include "foperation.h"
 #include "main.h"
 
-#define PATH_SIZE       256
-#define CONFIG_FILE     "config"
-#define CONFIG_LINE     512  // Max. value of number of bytes in line in config file.
+
+#define FILE_NAME_SIZE  256
+#define PATH_SIZE       128
+#define CONFIG_FILE     "config"    // Setup file
+#define LINE_SIZE       512  // Max. value of number of bytes in line in config file.
+
+#define WORK_FILE       "work.csv"  // Upload file
 
 /** Linux specific configuration.
  *  Adjust the following define to the device path of the sensor. */
 #define I2C_DEVICE_PATH         "/dev/i2c-1"
-
 #define FAILED_MAKE_RESET       10
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
 
+static char configFileName[FILE_NAME_SIZE];
+char currentPath[PATH_SIZE];
+LOCATION Site;
+
+/// @brief 2025.1.29 
+static char sensorName[16][256];    //=> Sensor.name
+static uint8_t sensorID[16];        //=> Sensor.id
+static char sensorUnit[16][16];     //=> Sensor.unit
+POINT Sensor;
+/*
+typedef struct{
+    uint8_t id;    // sensor_ID
+    char name[256];   // sensor_name
+    char unit[8];   // sensor_unit    
+}SENSOR;
+*/
+
+static char workFileName[FILE_NAME_SIZE];
 
 uint8_t sensorStatus = 0;       // Sensor' status
-
 /** Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv **/
-char work_file[] = "testWork_test.csv";
-char setup_file[] = "config";
+//char work_file[] = "testWork_test.csv";
 char dir_path[] = "/home/pi/works/upload_file/";
-char currentPath[PATH_SIZE];
-char location_name[] = "株式会社A";
-char fname[128];
+//char fname[128];
 unsigned char deviceMarking[32];
-
 struct tm *local;
 
-LOCATION Place;     // Monitor site information, name and number of sensor point's.
+//LOCATION Place;     // Monitor site information, name and number of sensor point's.
 SENSOR Sensor[16];  // Sensor's information whish is located at the monitor site.
 /// Initialize Sensor information the sample monitor site.
 Sensor_data result = {"ホルムアルデヒド濃度", "相対湿度", "周囲温度", 0.0, 0.0, 0.0};
 
 int main(int argc, char *argv[]){  
     static uint8_t point_num = 0;
-
+    int8_t i = 0;
+    char str[LINE_SIZE];
     FILE *fp; //FILE structure.
-    char fileName[512];
-    char str[CONFIG_LINE];
+    //SetupConfig(configFileName);
 
     /** Get the current path */
-    getcwd(currentPath, PATH_SIZE);
-    strcat(strcat(fileName, strcat(currentPath, "/")), CONFIG_FILE);
     
-    printf("fileName is %s.\n", fileName);
-    printf("fileName is %d.\n", sizeof(fileName));
-
-    if(IsExistFile(fileName)){
-        printf("The file [%s] does exist.\n", fileName);
-        fp = fopen(fileName, "r");
-        if(fp == NULL){
-            printf("%s file NOT open!", fileName);
-            return -1;
-        }
-        while(fgets(str, CONFIG_LINE, fp) != NULL){
-            printf("%s\n", str);
-        }
-        
+    if(getcwd(currentPath, PATH_SIZE) == NULL){
+        printf("カレントディレクトリーが取得できません.\nプログラムを終了します.\n");
+        return -1;    
     }
-    else{ 
-        printf("The file does Not exist.\n");
-        printf("file name is %s\n", fileName);
+    strcpy(configFileName, currentPath);
+    strcat(strcat(configFileName, "/"), CONFIG_FILE);
+
+    fp = fopen(configFileName, "r");
+    if (fp == NULL){
+        printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", configFileName);
+        return -1;
+    }
+    while(fgets(str, LINE_SIZE, fp) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(str, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            //strcpy(company, ptr);
+            strcpy(Site.name, ptr);
+            
+            ptr = strtok(NULL, ",");    // Number
+            // sensorNum = atoi(ptr);
+            Site.num = atoi(ptr);
+            
+        }else{
+            ptr = strtok(NULL, ",");    // Sensor ID
+            sensorID[id] = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(sensorName[id], ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(sensorUnit[id], ptr);
+
+            id++;
+        }
     }
     fclose(fp);
+    
+
+    printf("main_#97 The company is %s\n", Site.name);
+    printf("main_#98 The number is %d\n\n", Site.num);
+    for(i = 0; i < Site.num; i++){
+        printf("main_#100 The ID[%d] is %d\n", i, sensorID[i]);
+        printf("main_#101 The sensor[%d] is %s\n", i, sensorName[i]);
+        printf("main_#102 The unit[%d] is %s\n\n", i, sensorUnit[i]);
+    }
 
     /** @2024.11.13 Open work folder which includes uploadfile. **/
     //DIR *dir = opendir(dir_path);
@@ -98,7 +142,7 @@ int main(int argc, char *argv[]){
         printf("Welcome!\nSerial-code is %s.\n\n", deviceMarking);
         
         if (StartContinuousMeasurement() != NO_ERROR) {
-            printf("Failed to set senseor continuous_measurement()\nTerminated!\n");
+            printf("Failed to set sensor continuous_measurement()\nTerminated!\n");
             return -1;
         }        
         /** At the beginning, makes a dummy read once. */
@@ -106,7 +150,7 @@ int main(int argc, char *argv[]){
         BlankRead();
     
         /** previous dir control and prepare working directory.**/
-        strcat(strcat(fname, dir_path), work_file);
+        strcat(strcat(workFileName, currentPath), WORK_FILE);
 
         /* main loop */
         for (;;) {
@@ -138,24 +182,25 @@ int main(int argc, char *argv[]){
                     
                     /// Read sensor' data and display on the screen.
                     result = ReadMeasure(result);
-                    printf("%s\n", location_name);
+                    // printf("%s\n", company);
+                    printf("%s\n", Site.name);
                     printf("%s: %.1f ppb\n", result.gasName, result.gas);
                     printf("%s: %.2f %%RH\n", result.humid, result.humidity);
                     printf("%s: %.2f °C\n\n", result.temp, result.temperature);
                 }
                 if((int)second == 0 && flag == 0){
                     flag = 1;
-                    FILE *fp = fopen(fname,"w");
+                    FILE *fp = fopen(workFileName,"w");
                     if (fp == NULL){
-                        printf("The file: %s is NOT able to open.\n", fname);
+                        printf("The file: %s is NOT able to open.\n", workFileName);
                         return -1;
                     }
                     fprintf(fp, "measured_date,measured_value,sensor,place\n");
-                    fprintf(fp, "%s,%0.2f,%s,%s\n", today, result.gas, result.gasName, location_name);
-                    fprintf(fp, "%s,%.2f,%s,%s\n", today, result.humidity, result.humid, location_name);
-                    fprintf(fp, "%s,%.2f,%s,%s\n", today, result.temperature, result.temp, location_name);        
+                    fprintf(fp, "%s,%0.2f,%s,%s\n", today, result.gas, result.gasName, Site.name);
+                    fprintf(fp, "%s,%.2f,%s,%s\n", today, result.humidity, result.humid, Site.name);
+                    fprintf(fp, "%s,%.2f,%s,%s\n", today, result.temperature, result.temp, Site.name);        
                     fclose(fp);
-                    printf("Save data was written in %s\n\n", fname);            
+                    printf("Save data was written in %s\n\n", workFileName);            
                 }
             }else{
                 rept = 0;
@@ -180,7 +225,7 @@ int main(int argc, char *argv[]){
     }else if(argc >= 3 && (strcmp(argv[1], "setup") == 0)){
         /** Setup operation class 1.
         *  From choosing a configuration file **/
-        char line[CONFIG_LINE];
+        char line[LINE_SIZE];
         char *mark, *str, *unit;
         uint8_t *id = 0;
         int8_t *num = 0;
@@ -199,33 +244,33 @@ int main(int argc, char *argv[]){
             scanf("%c", ans);
             
             if(!strcmp(ans, "y")){
-                strcat(strcat(fname, dir_path), argv[2]);
-                if(AddFile(fname)) printf("ファイル, \"%s\"を作成しました。\n", fname);
+                strcat(strcat(configFileName, dir_path), argv[2]);
+                if(AddFile(configFileName)) printf("ファイル, \"%s\"を作成しました。\n", configFileName);
                 else{
-                    printf("ファイル名\"%s\"は既に存在します\n", fname);
+                    printf("ファイル名\"%s\"は既に存在します\n", configFileName);
                     //if(OverWriteFile(fname) == -1) printf("main_#201 Failed to make \"%s\".", fname);                    
                 }
             }else if(!strcmp(ans, "n")){
                 while(1U){
                     printf("ファイル名を入力してください\n");
                     scanf("%s", fl);
-                    strcat(strcat(fname, dir_path), fl);
-                    printf("ファイル名\"%s\"を作成します\n", fname);
+                    strcat(strcat(configFileName, dir_path), fl);
+                    printf("ファイル名\"%s\"を作成します\n", configFileName);
                     printf("OKの場合はyを変更する場合はnを入力してください... ");
                     scanf("%s", ans);
                     if(!strcmp(ans, "y")){
-                        OverWriteFile(fname);
+                        OverWriteFile(configFileName);
                     }
-                    strcpy(fname, "");
+                    strcpy(configFileName, "");
                 }
             }
             free(ans);
         }             
 
         // Open configuration file.
-        FILE *fp = fopen(fname,"r");
+        FILE *fp = fopen(configFileName,"r");
         if (fp == NULL){
-            printf("Failed to open file: %s\n", fname);
+            printf("Failed to open file: %s\n", configFileName);
             return -1;
         }
         
@@ -236,13 +281,13 @@ int main(int argc, char *argv[]){
         mark = (char *)malloc(sizeof(char) * 8);
         unit = (char*)malloc(sizeof(char) * 8);
 
-        while(fgets(line, CONFIG_LINE, fp) != NULL){
+        while(fgets(line, LINE_SIZE, fp) != NULL){
             sscanf(line,"%[^,],%hhd,%[^,],%hhd,%[^,]",mark, id, str, num, unit);
             i = *num - 1;
-            if(!strcmp(mark,"header")) Place = SetLocationName(str, *num);
-            else if(!strcmp(mark,"point")){
-                Sensor[i] = SetSensor(str, *id, unit);
-            }   
+            //if(!strcmp(mark,"header")) Place = SetLocationName(str, *num);
+            //else if(!strcmp(mark,"point")){
+            //    Sensor[i] = SetSensor(str, *id, unit);
+            //}   
         }
         free(mark); 
         free(id); 
@@ -250,14 +295,14 @@ int main(int argc, char *argv[]){
         free(str);
         
         putchar('\n');
-        printf("main_#255 Location name is \"%s\" and there are %d sensor points.\nAs followings;\n", Place.name, Place.point_num);
-        for(i=0;i < Place.point_num;i++){
-            printf("main_#257 Sensor[%d] is %s\n", i, Sensor[i].name);
-        }
+        //printf("main_#255 Location name is \"%s\" and there are %d sensor points.\nAs followings;\n", Place.name, Place.point_num);
+        //for(i=0;i < Place.point_num;i++){
+        //    printf("main_#257 Sensor[%d] is %s\n", i, Sensor[i].name);
+        //}
         fclose(fp);
         putchar('\n');
-        printf("main_#257 Close %s file.\n", fname);
-        printf("main_#258 And terminate.\n");
+        //printf("main_#257 Close %s file.\n", configFileName);
+        //printf("main_#258 And terminate.\n");
     
     }else{
         /** Setup operation class 2.
@@ -283,8 +328,8 @@ int main(int argc, char *argv[]){
             /** Set place **/
             while(strcmp(ans, "y") != 0){
                 printf("サイト名を設定してください... ");
-                scanf("%s", Place.name);
-                printf("your input is \"%s\"?\n\n", Place.name);
+                scanf("%s", Site.name);
+                printf("your input is \"%s\"?\n\n", Site.name);
                 printf("OKの場合は\"y\",変更する場合は\"n\"... ");
                 scanf("%s", ans);
             }
@@ -292,15 +337,15 @@ int main(int argc, char *argv[]){
             ans[0] = 0x00;
 
             /** Prepare setup_file file. **/
-            strcat(strcat(fname, dir_path), setup_file);
-            FILE *fp = fopen(fname,"w");
+            //strcat(strcat(fname, dir_path), configFileName);
+            FILE *fp = fopen(configFileName,"w");
             if (fp == NULL){
-                printf("The file: %s is NOT able to open.\n", fname);
+                printf("The file: %s is NOT able to open.\n", configFileName);
                 return -1;
             }
             //fprintf(fp, "Set_up data @%d-%2d-%2d %2d:%2d\n",year, month, day, hour, minute);
-            fprintf(fp, "place,%s\n",Place.name);
-            printf("\"%s\"をサイト名として登録しました.\n\n", Place.name);
+            fprintf(fp, "place,%s\n",Site.name);
+            printf("\"%s\"をサイト名として登録しました.\n\n", Site.name);
                 
             /** Set Sensor Points **/
             while(strcmp(ans, "q") != 0){
@@ -327,8 +372,8 @@ int main(int argc, char *argv[]){
     }
     return 0;
 }
-
-LOCATION SetLocationName(char* name, int8_t num) {
+/*
+Site SetLocationName(char* name, int8_t num) {
     LOCATION p;
     
     strcpy(p.name, name);
@@ -336,7 +381,8 @@ LOCATION SetLocationName(char* name, int8_t num) {
     p.point_num = num;
     return p;
 }
-
+ */
+/*
 SENSOR SetSensor(char* name, uint8_t id, char* unit) {
     SENSOR s;
     strcpy(s.name, name);
@@ -344,3 +390,4 @@ SENSOR SetSensor(char* name, uint8_t id, char* unit) {
     strcpy(s.unit, unit);
     return s;
 }
+*/
