@@ -2,7 +2,7 @@
 #include <stdlib.h>     // malloc(), atoi()
 #include <sys/stat.h>   // mkdir()
 #include <string.h>     // memset(), strtok()
-#include <unistd.h>     // sleep()/usleep() and close(), open(), read(), write()
+#include <unistd.h>     // sleep()/usleep(), close(), open(), read(), write()
 #include <dirent.h>     // For directory operation.
 #include <time.h>       // time()
 #include <stdbool.h>    // For bool operation.
@@ -14,7 +14,7 @@
 
 /** Raspberry Pi specific configuration.
  *  Adjust the following define to the device path of the sensor. */
-#define I2C_DEVICE_PATH         "/dev/i2c-1"
+//#define I2C_DEVICE_PATH         "/dev/i2c-1"
 
 #define FILE_NAME_SIZE  256
 #define PATH_SIZE       128
@@ -49,7 +49,6 @@ struct tm *local;
 
 int main(int argc, char *argv[]){  
     static uint8_t point_num = 0;
-    int8_t i;
     char str[LINE_SIZE];
     FILE *fp; //FILE structure.
     //SetupConfig(configFile);
@@ -57,14 +56,15 @@ int main(int argc, char *argv[]){
     /** Open the config file */
     if(getcwd(currentPath, PATH_SIZE) == NULL){
         printf("カレントディレクトリーが取得できません.\nプログラムを終了します.\n");
-        return -1;    
+        return -1;
     }
     strcpy(configFile, currentPath);
     strcat(strcat(configFile, "/"), CONFIG_FILE);
     fp = fopen(configFile, "r");
     if (fp == NULL){
-        printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", configFile);
-        return -1;
+        printf("指定された \"%s\" ファイルがありません.\n設定ファイルを作成します.\n", configFile);
+        BuildConfig(configFile);
+        //return -1;
     }
     while(fgets(str, LINE_SIZE, fp) != NULL){
         static int8_t id = 0;
@@ -101,7 +101,6 @@ int main(int argc, char *argv[]){
             exit(EXIT_FAILURE);
         }
     }
-    printf("main_#114 I got the upload file path as \"%s.\"\n", UPLOAD_PATH);
 
     /** Normal operation. **/
     if(argc <= 1){
@@ -227,7 +226,7 @@ int main(int argc, char *argv[]){
         char *mark, *str, *unit;
         uint8_t *id = 0;
         int8_t *num = 0;
-        //int i = 0;
+        int i = 0;
         
         printf("main_#180 argc = %d, argv = %s\n", argc, argv[1]);
         
@@ -302,71 +301,6 @@ int main(int argc, char *argv[]){
         //printf("main_#257 Close %s file.\n", configFile);
         //printf("main_#258 And terminate.\n");
     
-    }else{
-        /** Setup operation class 2.
-        *  From creating a setup file. **/
-        char point[128];
-        char ans[5];
-
-        if(strcmp(argv[1], "setup") == 0){
-            printf("main_#303 Let's make Sensor settings.\n\n");
-            /*
-            // 2023.11.24 Get the latest time
-            timer = time(NULL);
-            // Convert to localtime
-            local = localtime(&timer);
-            // 年月日と時分秒をtm構造体の各パラメタから変数に代入
-            year = local->tm_year + 1900;   // Because year count starts at 1900
-            month = local->tm_mon + 1;      // Because 0 indicates January.
-            day = local->tm_mday;
-            hour = local->tm_hour;
-            minute = local->tm_min;
-            second = local->tm_sec;
-            */
-            /** Set place **/
-            while(strcmp(ans, "y") != 0){
-                printf("サイト名を設定してください... ");
-                scanf("%s", Site.name);
-                printf("your input is \"%s\"?\n\n", Site.name);
-                printf("OKの場合は\"y\",変更する場合は\"n\"... ");
-                scanf("%s", ans);
-            }
-            /** Initialize the variable char* ans with 0x00 code. **/
-            ans[0] = 0x00;
-
-            /** Prepare setup_file file. **/
-            //strcat(strcat(fname, dir_path), configFile);
-            FILE *fp = fopen(configFile,"w");
-            if (fp == NULL){
-                printf("The file: %s is NOT able to open.\n", configFile);
-                return -1;
-            }
-            //fprintf(fp, "Set_up data @%d-%2d-%2d %2d:%2d\n",year, month, day, hour, minute);
-            fprintf(fp, "place,%s\n",Site.name);
-            printf("\"%s\"をサイト名として登録しました.\n\n", Site.name);
-                
-            /** Set Sensor Points **/
-            while(strcmp(ans, "q") != 0){
-                point_num++;
-                while(strcmp(ans, "y") != 0){
-                    printf("次にセンサーポイントを設定してください...\n");
-                    scanf("%s", point);
-                    printf("your input is ""%s""?\n", point);
-                    printf("OKの場合はyを変更する場合はnを...");
-                    scanf("%s", ans);
-                }
-                fprintf(fp, "%d,%s\n",point_num, point);
-                printf("\"%s\"をセンサーポイント名として登録しました.\n\n", point);
-                printf("センサーポイント設定を継続する場合は\"r\",終了する場合は\"q\"を入力してください... ");
-                scanf("%s", ans);
-            }
-            printf("main_#214 point_num is %d\n", point_num);
-            printf("your work was terminated %s\n", ans);
-            fclose(fp);
-        }else{
-            printf("You have set a wrong parameter\nTherefore Terminate!");
-            return -1;
-        }
     }
     return 0;
 }

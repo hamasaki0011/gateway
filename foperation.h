@@ -8,7 +8,7 @@
 #include "main.h"
 #include "common.h"
 
-void SetupConfig(const char);
+void BuildConfig(char*);
 
 /** Confirm the file exists or Not.
  * path:   file path.

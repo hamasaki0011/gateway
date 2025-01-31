@@ -11,64 +11,96 @@
 #include "device.h"
 #include "main.h"
 
-
-
-
-
-/** Confirm "config" file is exist or not.
+/** Build "config" file.
  *  path:   currentPath
     return value: Not 0 means exist, 0 means Not exist. */
-
-/*
-void SetupConfig(const char fname)
+void BuildConfig(char *file)
 {
-    char str[LINE_SIZE];
-    FILE *fp; //FILE structure.
+    /** Setup operation class 2. From creating a setup file. **/
+    char point[128];
+    char ans[2];
+    char fname[512];
 
-    if(getcwd(currentPath, PATH_SIZE) == NULL){
-        printf("カレントディレクトリーが取得できません.\nプログラムを終了します.\n");
-        return -1;    
-    }
-    // strcpy(configFile, currentPath);
-    strcpy(fname, currentPath);
-    // strcat(strcat(configFile, "/"), CONFIG_FILE);
-    strcat(strcat(fname, "/"), CONFIG_FILE);
-
-    // fp = fopen(configFile, "r");
-    fp = fopen(fname, "r"); 
-    if (fp == NULL){
-        // printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", configFile);
-        printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", fname);
-        return -1;
-    }
-    while(fgets(str, LINE_SIZE, fp) != NULL){
-        static int8_t id = 0;
-        char *ptr;
-
-        ptr = strtok(str, ",");     // First
-        if(strcmp(ptr, "Site") == 0){
-            ptr = strtok(NULL, ",");    // Site.name
-            strcpy(Site.name, ptr);
-            
-            ptr = strtok(NULL, ",");    // Number
-            Site.num = atoi(ptr);
-            
-        }else{
-            ptr = strtok(NULL, ",");    // Sensor ID
-            sensorID[id] = atoi(ptr);             
-
-            ptr = strtok(NULL, ",");    // Sensor NAME
-            strcpy(sensorName[id], ptr);
-
-            ptr = strtok(NULL, ",");    // Sensor UNIT
-            strcpy(sensorUnit[id], ptr);
-
-            id++;
+    printf("foperation_#23 config is %s\n", file);
+    ans[0] = '\0';
+    printf("設定ファイルを用意している場合は... \"y\"を\n");
+    printf("設定ファイルを作成する場合は... \"n\"を入力してください.\n");
+    while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
+        scanf("%s", ans);
+        printf("Your input is %s\n\n", ans);
+        if(strcmp(ans, "y") == 0){
+            printf("設定ファイル名をディレクトリーから指定してください.\n");
+            scanf("%s", fname);
+            printf("ファイル名は,\"%s\"ですね?\n\n", fname);
+            break;
         }
     }
-    fclose(fp);
+    printf("OKの場合は\"y\"を入力してください... ");
+    while(strcmp(ans, "y") != 0){
+        scanf("%s", ans);
+        if(strcmp(ans, "y") == 0) break;
+    }
+    printf("Hi\n");
+
+    printf("foperation_#24 設定ファイルを指定してください\n");
+    // if(strcmp(argv[1], "setup") == 0){
+    //     printf("main_#303 Let's make Sensor settings.\n\n");
+            // 2023.11.24 Get the latest time
+            // timer = time(NULL);
+            // // Convert to localtime
+            // local = localtime(&timer);
+            // // 年月日と時分秒をtm構造体の各パラメタから変数に代入
+            // year = local->tm_year + 1900;   // Because year count starts at 1900
+            // month = local->tm_mon + 1;      // Because 0 indicates January.
+            // day = local->tm_mday;
+            // hour = local->tm_hour;
+            // minute = local->tm_min;
+            // second = local->tm_sec;
+    //     /** Set place **/
+    //     while(strcmp(ans, "y") != 0){
+    //         printf("サイト名を設定してください... ");
+    //         scanf("%s", Site.name);
+    //         printf("your input is \"%s\"?\n\n", Site.name);
+    //         printf("OKの場合は\"y\",変更する場合は\"n\"... ");
+    //         scanf("%s", ans);
+    //     }
+    //     /** Initialize the variable char* ans with 0x00 code. **/
+    //     ans[0] = 0x00;
+
+    //     /** Prepare setup_file file. **/
+    //     //strcat(strcat(fname, dir_path), configFile);
+    //     FILE *fp = fopen(configFile,"w");
+    //     if (fp == NULL){
+    //         printf("The file: %s is NOT able to open.\n", configFile);
+    //         return -1;
+    //     }
+    //     //fprintf(fp, "Set_up data @%d-%2d-%2d %2d:%2d\n",year, month, day, hour, minute);
+    //     fprintf(fp, "place,%s\n",Site.name);
+    //     printf("\"%s\"をサイト名として登録しました.\n\n", Site.name);
+                
+    //     /** Set Sensor Points **/
+    //     while(strcmp(ans, "q") != 0){
+    //         point_num++;
+    //         while(strcmp(ans, "y") != 0){
+    //             printf("次にセンサーポイントを設定してください...\n");
+    //             scanf("%s", point);
+    //             printf("your input is ""%s""?\n", point);
+    //             printf("OKの場合はyを変更する場合はnを...");
+    //             scanf("%s", ans);
+    //         }
+    //         fprintf(fp, "%d,%s\n",point_num, point);
+    //         printf("\"%s\"をセンサーポイント名として登録しました.\n\n", point);
+    //         printf("センサーポイント設定を継続する場合は\"r\",終了する場合は\"q\"を入力してください... ");
+    //         scanf("%s", ans);
+    //     }
+    //     printf("main_#214 point_num is %d\n", point_num);
+    //     printf("your work was terminated %s\n", ans);
+    //     fclose(fp);
+    // }else{
+    //     printf("You have set a wrong parameter\nTherefore Terminate!");
+    //     return -1;
+    // }
 }
-*/
 
 /** Confirm the file exists or Not.
  * path:   file path.
