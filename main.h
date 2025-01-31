@@ -25,16 +25,21 @@
 *  int tm_yday;     // 年内の通し日数 [0-365] 0から始まることに注意
 *  int tm_isdst;    // 夏時間が無効であれば 0 }; */
 
+//static char sensorName[16][256];
+//static int8_t sensorID[16];
+//static char sensorUnit[16][16];
 typedef struct{
-    char name[128];     // location_name
-    int8_t point_num;   // sensor count
+    char name[128]; // location_name
+    int8_t num;     // sensor count
 }LOCATION;
 
 typedef struct{
-    uint8_t id;    // sensor_ID
-    char name[256];   // sensor_name
-    char unit[8];   // sensor_unit    
-}SENSOR;
+    uint8_t id;     // sensor_ID
+    char name[256]; // sensor_name
+    char unit[8];   // sensor_unit
+    
+    float data;     // measured data
+}POINT;
 
 typedef struct{
     char *gasName;  // gasName
@@ -44,8 +49,8 @@ typedef struct{
     float gas;
     float humidity;
     float temperature;
-}Sensor_data;
-LOCATION SetLocationName(char*, int8_t);
-SENSOR SetSensor(char*, uint8_t, char*);
+}SDATA;
+//LOCATION SetLocationName(char*, int8_t);
+//SENSOR SetSensor(char*, uint8_t, char*);
 
 #endif /* MAIN_H */

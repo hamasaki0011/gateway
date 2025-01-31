@@ -1,0 +1,11 @@
+{
+    "cSpell.words": [
+        "foperation",
+        "hcho"
+    ],
+    "files.associations": {
+        "*.py": "python",
+        "*.html": "django-html",
+        "string.h": "c"
+    }
+}

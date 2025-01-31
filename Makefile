@@ -2,7 +2,7 @@ commons = common.h common.c
 foperations = foperation.h foperation.c
 devices = device.h device.c
 
-CFLAGS = -Os -Wall -fstrict-aliasing -Wstrict-aliasing -Wsign-conversion -fPIC -I.
+CFLAGS = -Os -Wall -fstrict-aliasing -Wstrict-aliasing -Wsign-conversion -Wno-unused-result -fPIC -I.
 
 ifdef CI
     CFLAGS += -Werror

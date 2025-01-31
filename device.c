@@ -130,18 +130,20 @@ int8_t BlankRead(){
     return 0;    
 }
 
-Sensor_data ReadMeasure(Sensor_data r){
+SDATA ReadMeasure(SDATA r){
     float data1, data2, data3;
     
     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
         r.gas = 0.0;
         r.humidity = 0.0;
         r.temperature = 0.0;
-        printf("Failed to read measure data form Sensor\n");
+        printf("Failed to read Sensor data.\n");
+
     }else{
         r.gas = data1;
         r.humidity = data2;
         r.temperature = data3;
+        
     }    
     return r;
 }

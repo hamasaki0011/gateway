@@ -11,7 +11,64 @@
 #include "device.h"
 #include "main.h"
 
-#define CONFIG_LINE             512  // Max. value of number of bytes in line in config file.
+
+
+
+
+/** Confirm "config" file is exist or not.
+ *  path:   currentPath
+    return value: Not 0 means exist, 0 means Not exist. */
+
+/*
+void SetupConfig(const char fname)
+{
+    char str[LINE_SIZE];
+    FILE *fp; //FILE structure.
+
+    if(getcwd(currentPath, PATH_SIZE) == NULL){
+        printf("カレントディレクトリーが取得できません.\nプログラムを終了します.\n");
+        return -1;    
+    }
+    // strcpy(configFile, currentPath);
+    strcpy(fname, currentPath);
+    // strcat(strcat(configFile, "/"), CONFIG_FILE);
+    strcat(strcat(fname, "/"), CONFIG_FILE);
+
+    // fp = fopen(configFile, "r");
+    fp = fopen(fname, "r"); 
+    if (fp == NULL){
+        // printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", configFile);
+        printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", fname);
+        return -1;
+    }
+    while(fgets(str, LINE_SIZE, fp) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(str, ",");     // First
+        if(strcmp(ptr, "Site") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(Site.name, ptr);
+            
+            ptr = strtok(NULL, ",");    // Number
+            Site.num = atoi(ptr);
+            
+        }else{
+            ptr = strtok(NULL, ",");    // Sensor ID
+            sensorID[id] = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(sensorName[id], ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(sensorUnit[id], ptr);
+
+            id++;
+        }
+    }
+    fclose(fp);
+}
+*/
 
 /** Confirm the file exists or Not.
  * path:   file path.
@@ -39,6 +96,6 @@ int8_t OverWriteFile(const char* path)
         res = -1;
     }
     fclose(fp);
-    printf("OverWrite_#402 \"%s\" is overwerwritten.\n", path);
+    printf("OverWrite_#402 \"%s\" is overwritten.\n", path);
     return res;
 }
