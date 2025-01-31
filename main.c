@@ -91,13 +91,6 @@ int main(int argc, char *argv[]){
         }
     }
     fclose(fp);
-    printf("main_#99 The company(Site.name) is %s\n", Site.name);
-    printf("main_#100 The number(Site.num) is %d\n\n", Site.num);
-    for(i = 0; i < Site.num; i++){
-        printf("main_#102 The Sensor[%d].id is %d\n", i, Sensor[i].id);
-        printf("main_#103 The Sensor[%d].name is %s\n", i, Sensor[i].name);
-        printf("main_#104 The Sensor[%d].unit is %s\n\n", i, Sensor[i].unit);
-    }
 
     /** @2025.1.31 Open upload folder which includes upload_file. **/
     DIR *work_dir = opendir(UPLOAD_PATH);
@@ -109,7 +102,6 @@ int main(int argc, char *argv[]){
         }
     }
     printf("main_#114 I got the upload file path as \"%s.\"\n", UPLOAD_PATH);
-
 
     /** Normal operation. **/
     if(argc <= 1){
@@ -196,10 +188,6 @@ int main(int argc, char *argv[]){
                     flag = 1;
                     FILE *fp = fopen(uploadFile,"w");
                     if (fp == NULL){
-                        //char temp[512];
-                        //printf("The file: %s is NOT able to open.\n", uploadFile);
-                        //strcpy(temp, sprintf("%sファイルにアクセスすることができません... プログラムを終了します.\n", uploadFile));
-                        //perror(temp);
                         perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
                         return -1;
                     }
@@ -207,10 +195,10 @@ int main(int argc, char *argv[]){
                     fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
                     fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
                     fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
+
                     fclose(fp);
                     printf("Save data was written in %s\n\n", uploadFile);
-                    
-                    fclose(fp);            
+
                 }
             }else{
                 rept = 0;
