@@ -29,15 +29,15 @@ void SetupConfig(const char fname)
         printf("カレントディレクトリーが取得できません.\nプログラムを終了します.\n");
         return -1;    
     }
-    // strcpy(configFileName, currentPath);
+    // strcpy(configFile, currentPath);
     strcpy(fname, currentPath);
-    // strcat(strcat(configFileName, "/"), CONFIG_FILE);
+    // strcat(strcat(configFile, "/"), CONFIG_FILE);
     strcat(strcat(fname, "/"), CONFIG_FILE);
 
-    // fp = fopen(configFileName, "r");
+    // fp = fopen(configFile, "r");
     fp = fopen(fname, "r"); 
     if (fp == NULL){
-        // printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", configFileName);
+        // printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", configFile);
         printf("指定された \"%s\" ファイルがありません.\nプログラムを終了します.\n", fname);
         return -1;
     }

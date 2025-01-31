@@ -43,7 +43,7 @@ int16_t StartContinuousMeasurement(void);
  * @return 0 on success, an error code otherwise */
 int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature);
 int8_t BlankRead(void);
-Sensor_data ReadMeasure(Sensor_data r);
+SDATA ReadMeasure(SDATA r);
 
 /**
  * sfa3x_stop_measurement() - Stops the measurement mode and returns to idle
@@ -52,7 +52,7 @@ Sensor_data ReadMeasure(Sensor_data r);
  * @return 0 on success, an error code otherwise */
 int16_t StopMeasurement(void);
                                 
-int8_t SendData(int16_t sock, Sensor_data h);
+int8_t SendData(int16_t sock, SDATA h);
 
 /** i2c_read_data_inplace() - Reads data from the Sensor.
  * @param address              Sensor I2C address

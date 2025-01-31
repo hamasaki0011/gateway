@@ -29,14 +29,16 @@
 //static int8_t sensorID[16];
 //static char sensorUnit[16][16];
 typedef struct{
-    char name[128];     // location_name
-    int8_t num;         // sensor count
+    char name[128]; // location_name
+    int8_t num;     // sensor count
 }LOCATION;
 
 typedef struct{
-    uint8_t id;    // sensor_ID
-    char name[256];   // sensor_name
-    char unit[8];   // sensor_unit    
+    uint8_t id;     // sensor_ID
+    char name[256]; // sensor_name
+    char unit[8];   // sensor_unit
+    
+    float data;     // measured data
 }POINT;
 
 typedef struct{
@@ -47,7 +49,7 @@ typedef struct{
     float gas;
     float humidity;
     float temperature;
-}Sensor_data;
+}SDATA;
 //LOCATION SetLocationName(char*, int8_t);
 //SENSOR SetSensor(char*, uint8_t, char*);
 
