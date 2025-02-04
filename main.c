@@ -9,7 +9,6 @@
 
 #include "common.h"
 #include "device.h"
-#include "foperation.h"
 #include "main.h"
 
 /** Raspberry Pi specific configuration.
@@ -26,51 +25,66 @@
 #define FAILED_MAKE_RESET       10
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
-//#define EXIT_FAILURE     -1
 
-static char configFile[FILE_NAME_SIZE];
-static char uploadFile[FILE_NAME_SIZE];
-char currentPath[PATH_SIZE];
 LOCATION Site;
 //Site_id:    Site.id 
-//Site_name:  Site.name
-//Site_num:   Site.num
+//Site_nam  Site.name
+//Site_num:   Site.num:
 
 POINT Sensor[16];   // Sensor's information whish is located at the monitor site.
 //Sensor_id:    Sensor[id].id 
 //Sensor_name:  Sensor[id].name
 //Sensor_unit:   Sensor[id].unit
 
-uint8_t sensorStatus = 0;       // Sensor' status
-
-/** Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv **/
-unsigned char deviceMarking[32];
 struct tm *local;
 
-int main(int argc, char *argv[]){  
-    static uint8_t point_num = 0;
-    char str[LINE_SIZE];
-    FILE *fp; //FILE structure.
-    //SetupConfig(configFile);
+int main(int argc, char *argv[]){
+    /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
+    static char uploadFile[FILE_NAME_SIZE];
+    char configFile[FILE_NAME_SIZE];
+    char currentPath[PATH_SIZE];
+    char lineString[LINE_SIZE];
+    unsigned char deviceMarking[32];
 
-    /** Open the config file */
+    /// Find current directory and Set config file name and path.
     if(getcwd(currentPath, PATH_SIZE) == NULL){
-        printf("カレントディレクトリーが取得できません.\nプログラムを終了します.\n");
-        return -1;
+        perror("カレントディレクトリーを取得できません.\n");
+        exit(EXIT_FAILURE);
     }
     strcpy(configFile, currentPath);
     strcat(strcat(configFile, "/"), CONFIG_FILE);
-    fp = fopen(configFile, "r");
-    if (fp == NULL){
-        printf("指定された \"%s\" ファイルがありません.\n設定ファイルを作成します.\n", configFile);
-        BuildConfig(configFile);
-        //return -1;
+
+    /// Open upload folder which includes upload_file.
+    DIR *work_dir = opendir(UPLOAD_PATH);
+    if (!work_dir){ 
+        if(mkdir(UPLOAD_PATH, 0755)){
+            perror("指定したフォルダーの作成に失敗しました.\n");
+            exit(EXIT_FAILURE);
+        }
     }
-    while(fgets(str, LINE_SIZE, fp) != NULL){
+
+    FILE *fp; //FILE structure.
+
+    /// Normal operation.
+    if(argc <= 1){
+        fp = fopen(configFile, "r");
+        if (fp == NULL){
+            printf("設定ファイルがありません.\n作成しますか？\n");
+            /* ［要検討］作成しない場合の対処 */
+            fp = fopen(BuildConfig(configFile, Site, Sensor), "r");
+        }     
+
+    }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
+        printf("設定ファイルを作成します.\n");
+        fp = fopen(BuildConfig(configFile, Site, Sensor), "r");        
+    }
+
+    /// Load config file.
+    while(fgets(lineString, LINE_SIZE, fp) != NULL){
         static int8_t id = 0;
         char *ptr;
 
-        ptr = strtok(str, ",");     // First
+        ptr = strtok(lineString, ",");     // First
         if(strcmp(ptr, "location") == 0){
             ptr = strtok(NULL, ",");    // Site.name
             strcpy(Site.name, ptr);
@@ -90,236 +104,190 @@ int main(int argc, char *argv[]){
             id++;
         }
     }
-    fclose(fp);
+    fclose(fp);  
 
-    /** @2025.1.31 Open upload folder which includes upload_file. **/
-    DIR *work_dir = opendir(UPLOAD_PATH);
-    if (!work_dir){ 
-        if(mkdir(UPLOAD_PATH, 0755)){
-            //error(argv[0]);
-            perror("指定したフォルダーの作成に失敗しました.");
-            exit(EXIT_FAILURE);
-        }
+    /// Reset sensor board hardware.
+    if (DeviceReset() != NO_ERROR){
+        perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
+        exit(EXIT_FAILURE);
     }
-
-    /** Normal operation. **/
-    if(argc <= 1){
-        /// Reset sensor board hardware.
-        if (DeviceReset() != NO_ERROR){
-            perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
-            return -1;
-            //abort();
-            //exit(EXIT_FAILURE);
-        }
-        /// Obtain the device marking.
-        if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
-            perror("センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n");
-            return -1;
-        }
-        /// Opening message.
-        printf("センサーの読み取りを開始します.\nセンサーのシリアルコードは, %s です.\n\n", deviceMarking);
+    /// Obtain the device marking.
+    if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
+        perror("センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n");
+        exit(EXIT_FAILURE);
+    }
+    /// Opening message.
+    printf("センサーの読み取りを開始します.\nセンサーのシリアルコードは, %s です.\n\n", deviceMarking);
         
-        if (StartContinuousMeasurement() != NO_ERROR) {
-            perror("センサーを連続読み出しモードに設定できませんでした... プログラムを終了します.\n");
-            return -1;
-        }        
-        /// At the beginning, makes a dummy read once.
+    if (StartContinuousMeasurement() != NO_ERROR) {
+        perror("センサーを連続読み出しモードに設定できませんでした... プログラムを終了します.\n");
+        exit(EXIT_FAILURE);
+    }        
+    /// At the beginning, makes a dummy read once.
+    usleep(500000);
+    BlankRead();
+
+    /// previous dir control and prepare working directory.**/
+    strcat(strcat(strcat(strcat(uploadFile, currentPath), "/"), UPLOAD_PATH), UPLOAD_FILE);
+
+    /** main loop */
+    for (;;) {
+        static bool flag = 0, rept = 0;
+        time_t timer;
+        int year, month, day, hour, minute, second;
+        char dateNow[32], timeNow[16], now[48];
+        /** Case 0: Using a data logger connecting one or many sensors,
+         * and it is connected to a lap-top computer via serial communication interface. */
+
+        /** Case 1: Using a sensirion sensor and it embedded temperature and humidity sensor in it,
+         * and it is connected with Raspberry Pi via I2C interface.  */
+        SDATA Result = {
+            Sensor[0].name, Sensor[1].name, Sensor[2].name, 
+            Sensor[0].data, Sensor[1].data, Sensor[2].data
+        };
+
         usleep(500000);
-        BlankRead();
+        // 2023.11.24 Get the latest tim
+        timer = time(NULL);  // For measurement system base timer.
+        local = localtime(&timer);  // Convert to localtime
+        // Read year, month, day, hour, minute, second to current variables.
+        year = local->tm_year + 1900;   // Because year count starts at 1900
+        month = local->tm_mon + 1;      // Because 0 indicates January.
+        day = local->tm_mday;
+        hour = local->tm_hour;
+        minute = local->tm_min;
+        second = local->tm_sec;            
+        sprintf(dateNow, "%d-%d-%d", year, month, day);
+        sprintf(timeNow, "%d:%d:%d", hour, minute, second);
+        sprintf(now, "%s %s", dateNow, timeNow);
 
-        /** previous dir control and prepare working directory.**/
-        strcat(strcat(strcat(strcat(uploadFile, currentPath), "/"), UPLOAD_PATH), UPLOAD_FILE);
-        printf("main_#153 file name is %s\n", uploadFile);
+        if(second % 5 == 0){
+            if(rept == 0){
+                rept = 1;
 
-        /* main loop */
-        for (;;) {
-            static bool flag = 0, rept = 0;
-            time_t timer;
-            int year, month, day, hour, minute, second;
-            char dateNow[32], timeNow[16], now[48];
-            /** Case 0: Using a data logger connecting one or many sensors,
-             * and it is connected to a lap-top computer via serial communication interface. */
-
-            /** Case 1: Using a sensirion sensor and it embedded temperature and humidity sensor in it,
-             * and it is connected with Raspberry Pi via I2C interface.  */
-            SDATA Result = {
-                Sensor[0].name, Sensor[1].name, Sensor[2].name, 
-                Sensor[0].data, Sensor[1].data, Sensor[2].data
-            };
-
-            usleep(500000);
-            // 2023.11.24 Get the latest tim
-            timer = time(NULL);  // For measurement system base timer.
-            local = localtime(&timer);  // Convert to localtime
-            // Read year, month, day, hour, minute, second to current variables.
-            year = local->tm_year + 1900;   // Because year count starts at 1900
-            month = local->tm_mon + 1;      // Because 0 indicates January.
-            day = local->tm_mday;
-            hour = local->tm_hour;
-            minute = local->tm_min;
-            second = local->tm_sec;            
-            sprintf(dateNow, "%d-%d-%d", year, month, day);
-            sprintf(timeNow, "%d:%d:%d", hour, minute, second);
-            sprintf(now, "%s %s", dateNow, timeNow);
-
-            if(second % 5 == 0){
-                if(rept == 0){
-                    rept = 1;
-
-                    /// Display current time' information on console.
-                    printf("%s @%s\n", dateNow, timeNow);
-                    /// Read sensor' data and display on the screen.
-                    Result = ReadMeasure(Result);
-                    /** The structures of the Result
-                     * char *gasName;       // gas name
-                     * char *humid;         // humidity
-                     * char *temp;          // temperature
-                     * float gas;           // gas concentration value
-                     * float humidity;      // humidity value
-                     * float temperature;   // temperature value */
-                    printf("%s\n", Site.name);
-                    printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
-                    printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
-                    printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
-                }
-
-                if(second == 0 && flag == 0){
-                    flag = 1;
-                    FILE *fp = fopen(uploadFile,"w");
-                    if (fp == NULL){
-                        perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
-                        return -1;
-                    }
-                    fprintf(fp, "measured_date,measured_value,sensor,place\n");
-                    fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
-                    fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
-                    fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
-
-                    fclose(fp);
-                    printf("Save data was written in %s\n\n", uploadFile);
-
-                }
-            }else{
-                rept = 0;
-                flag = 0;
+                /// Display current time' information on console.
+                printf("%s @%s\n", dateNow, timeNow);
+                /// Read sensor' data and display on the screen.
+                Result = ReadMeasure(Result);
+                /** The structures of the Result
+                 * char *gasName;       // gas name
+                 * char *humid;         // humidity
+                 * char *temp;          // temperature
+                 * float gas;           // gas concentration value
+                 * float humidity;      // humidity value
+                 * float temperature;   // temperature value */
+                printf("%s\n", Site.name);
+                printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
+                printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
+                printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
             }
-            // 2023.11.24 Read measured data and display on terminal
-            // 2024.11.12 #233 in tcp_com.c
-            //if (closedir(dir)) printf("Failed to close directory.\n");
-            //printf("main_#125 Close directory upload_file\n");
-        }
-    
-        // To finish this application
-        // What should we do at the next time to start application.
-        /*
-        // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
-        sens_error = sfa3x_stop_measurement();
-        printf("センサーを停止します。\n");
-        */
-        /** Exit from this application program **/
-        return 0;
 
-    }else if(argc >= 3 && (strcmp(argv[1], "setup") == 0)){
-        /** Setup operation class 1.
-        *  From choosing a configuration file **/
-        char line[LINE_SIZE];
-        char *mark, *str, *unit;
-        uint8_t *id = 0;
-        int8_t *num = 0;
-        int i = 0;
-        
-        printf("main_#180 argc = %d, argv = %s\n", argc, argv[1]);
-        
-        // In case of specify the setup file name.
-        if(argc == 3){
-            char* ans;              
-            char fl[128];
+            if(second == 0 && flag == 0){
+                flag = 1;
+                FILE *fp = fopen(uploadFile,"w");
+                if (fp == NULL){
+                    perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
+                    return -1;
+                }
+                fprintf(fp, "measured_date,measured_value,sensor,place\n");
+                fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
+                fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
+                fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
 
-            ans = (char *)malloc(sizeof(char));
-            printf("ファイル名\"%s\"を設定ファイルとします\n", argv[2]);
-            printf("OKの場合は\"y\",変更する場合は\"n\"... ");
-            scanf("%c", ans);
-            
-            if(!strcmp(ans, "y")){
-//                strcat(strcat(configFile, dir_path), argv[2]);
-                if(AddFile(configFile)) printf("ファイル, \"%s\"を作成しました。\n", configFile);
-                else{
-                    printf("ファイル名\"%s\"は既に存在します\n", configFile);
-                    //if(OverWriteFile(fname) == -1) printf("main_#201 Failed to make \"%s\".", fname);                    
-                }
-            }else if(!strcmp(ans, "n")){
-                while(1U){
-                    printf("ファイル名を入力してください\n");
-                    scanf("%s", fl);
-//                    strcat(strcat(configFile, dir_path), fl);
-                    printf("ファイル名\"%s\"を作成します\n", configFile);
-                    printf("OKの場合はyを変更する場合はnを入力してください... ");
-                    scanf("%s", ans);
-                    if(!strcmp(ans, "y")){
-                        OverWriteFile(configFile);
-                    }
-                    strcpy(configFile, "");
-                }
+                fclose(fp);
+                printf("Saved into \"%s\"\n\n", uploadFile);
+
             }
-            free(ans);
-        }             
-
-        // Open configuration file.
-        FILE *fp = fopen(configFile,"r");
-        if (fp == NULL){
-            printf("Failed to open file: %s\n", configFile);
-            return -1;
+        }else{
+            rept = 0;
+            flag = 0;
         }
-        
-        // Read config.
-        str = (char *)malloc(sizeof(char) * 256);
-        num = (int8_t *)malloc(sizeof(int8_t));
-        id = (uint8_t*)malloc(sizeof(uint8_t)); 
-        mark = (char *)malloc(sizeof(char) * 8);
-        unit = (char*)malloc(sizeof(char) * 8);
-
-        while(fgets(line, LINE_SIZE, fp) != NULL){
-            sscanf(line,"%[^,],%hhd,%[^,],%hhd,%[^,]",mark, id, str, num, unit);
-            i = *num - 1;
-            //if(!strcmp(mark,"header")) Place = SetLocationName(str, *num);
-            //else if(!strcmp(mark,"point")){
-            //    Sensor[i] = SetSensor(str, *id, unit);
-            //}   
-        }
-        free(mark); 
-        free(id); 
-        free(num); 
-        free(str);
-        
-        putchar('\n');
-        //printf("main_#255 Location name is \"%s\" and there are %d sensor points.\nAs followings;\n", Place.name, Place.point_num);
-        //for(i=0;i < Place.point_num;i++){
-        //    printf("main_#257 Sensor[%d] is %s\n", i, Sensor[i].name);
-        //}
-        fclose(fp);
-        putchar('\n');
-        //printf("main_#257 Close %s file.\n", configFile);
-        //printf("main_#258 And terminate.\n");
-    
+        // 2023.11.24 Read measured data and display on terminal
+        // 2024.11.12 #233 in tcp_com.c
+        //if (closedir(dir)) printf("Failed to close directory.\n");
+        //printf("main_#125 Close directory upload_file\n");
     }
+    
+    // To finish this application
+    // What should we do at the next time to start application.
+
+    // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
+    // sens_error = sfa3x_stop_measurement();
+    // printf("センサーを停止します。\n");
+
+    /** Exit from this application program **/
     return 0;
 }
-/*
-Site SetLocationName(char* name, int8_t num) {
-    LOCATION p;
+
+
+/** Build "config" file.
+ *  path:   currentPath
+ *  return value: Not 0 means exist, 0 means Not exist. */
+char* BuildConfig(char *f, LOCATION place, POINT* sensor)
+{
+    char ans[2];
+    int8_t i;
+
+    printf("設定ファイル\"%s\"を作成します.\n", f);
+    printf("okであれば \"y\"を, 中止する場合は... \"n\"を入力してください.\n");
+    while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
+        scanf("%s", ans);        
+        if(strcmp(ans, "y") == 0) break;
+        else if(strcmp(ans, "n") == 0) exit(-1);
+    }
+    ans[0] = '\0';
+
+    /** Set Site name */
+    while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
+        printf("測定サイト名(Location)を入力してください... ");
+        scanf("%s", place.name);
+        printf("測定ポイント数(センサー数)を入力してください... ");
+        scanf("%hhd", &place.num);
+        putchar('\n');
+        printf("測定サイト名は... \"%s\"\n測定ポイント数は... \"%d\"\n", place.name, place.num);
+        putchar('\n');
+        printf("確認OKの場合は\"y\", 変更する場合は\"n\"を入力してください.\n");
+        scanf("%s", ans);
+        if(strcmp(ans, "y") == 0) break;
+    }
+    ans[0] = '\0';
+    putchar('\n');
+    /** Set Sensor points */
+    while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
+        for(i = 0; i < place.num; i++){
+            printf("ポイント(センサー)名を入力してください... ");
+            scanf("%s", sensor[i].name);
+            printf("測定値の単位を入力してください... ");
+            scanf("%s", sensor[i].unit);
+            sensor[i].id = i + 1;
+        }
+        putchar('\n');
+        printf("測定サイト: \"%s\" (測定ポイント数 %d)の測定ポイントは\n", place.name, place.num);
+        printf("Sensor ID,Sensor,unit\n");
+        for(i = 0; i < place.num; i++){
+            printf("%2hhd, %-8s, %2s\n", sensor[i].id, sensor[i].name, sensor[i].unit); 
+        }
+        putchar('\n');
+        printf("確認OKの場合は\"y\",\n変更する場合は\"n\"を入力してください.\n");
+        
+        scanf("%s", ans);
+        if(strcmp(ans, "y") == 0) break;
+    }
+    ans[0] = '\0';
+    putchar('\n');
     
-    strcpy(p.name, name);
-    //p.name = name;
-    p.point_num = num;
-    return p;
+    FILE *fs = fopen(f,"w");
+
+    if (fs == NULL){
+        perror("設定ファイルを開けません.\n");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(fs, "location,%s,%d\n",place.name,place.num);
+    for(i =0; i < place.num; i++){
+        fprintf(fs, "point,%hhd,%s,%s\n",sensor[i].id, sensor[i].name, sensor[i].unit);
+    }
+    fclose(fs);
+    
+    return f;
 }
- */
-/*
-SENSOR SetSensor(char* name, uint8_t id, char* unit) {
-    SENSOR s;
-    strcpy(s.name, name);
-    s.id = id;
-    strcpy(s.unit, unit);
-    return s;
-}
-*/
+
