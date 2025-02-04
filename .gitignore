@@ -1,3 +1,4 @@
 .git/
-comspec.h
-comspec.c
+config
+sensing
+upload_file/

@@ -12,7 +12,7 @@ endif
 all: main
 
 main: clean
-	$(CC) $(CFLAGS) -o $ sense ${devices} ${commons} main.h main.c
+	$(CC) $(CFLAGS) -o $ sensing ${devices} ${commons} main.h main.c
 
 clean:
 	$(RM) main
