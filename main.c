@@ -1,14 +1,13 @@
 #include <stdio.h>      // printf(), strcmp(), fopen(), perror()
 #include <stdlib.h>     // malloc(), atoi()
-#include <sys/stat.h>   // mkdir()
 #include <string.h>     // memset(), strtok()
 #include <unistd.h>     // sleep()/usleep(), close(), open(), read(), write()
-#include <dirent.h>     // For directory operation.
 #include <time.h>       // time()
-#include <stdbool.h>    // For bool operation.
+#include <stdbool.h>    // For bool operation, true and false.
 
 #include "common.h"
 #include "device.h"
+#include "file_control.h"
 #include "main.h"
 
 /** Raspberry Pi specific configuration.
@@ -16,11 +15,7 @@
 //#define I2C_DEVICE_PATH         "/dev/i2c-1"
 
 #define FILE_NAME_SIZE  256
-#define PATH_SIZE       128
 #define LINE_SIZE       512  // Max. value of number of bytes in line in config file.
-#define CONFIG_FILE     "config"    // Setup file
-#define UPLOAD_FILE     "work.csv"  // Upload file
-#define UPLOAD_PATH     "../upload_file/"  // Upload file
 
 #define FAILED_MAKE_RESET       10
 #define FAILED_GET_DEVICEMARK   20
@@ -30,37 +25,24 @@ int main(int argc, char *argv[]){
     /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
     static char uploadFile[FILE_NAME_SIZE];
     static char configFile[FILE_NAME_SIZE];
-    char currentPath[PATH_SIZE];
     char readLine[LINE_SIZE];
     unsigned char deviceMarking[32];
     
     struct tm *local;
     LOCATION Site;
-    //Site_id:    Site.id 
-    //Site_nam  Site.name
-    //Site_num:   Site.num:
+    /// Site_id:    Site.id 
+    /// Site_nam  Site.name
+    /// Site_num:   Site.num:
     POINT Sensor[16];   // Sensor's information whish is located at the monitor site.
-    //Sensor_id:    Sensor[id].id 
-    //Sensor_name:  Sensor[id].name
-    //Sensor_unit:   Sensor[id].unit
+    /// Sensor_id:    Sensor[id].id 
+    /// Sensor_name:  Sensor[id].name
+    /// Sensor_unit:   Sensor[id].unit
 
     /// Find current directory and Set config file' name and path.
-    if(getcwd(currentPath, PATH_SIZE) == NULL){
-        perror("カレントディレクトリーを取得できません.\n");
-        exit(EXIT_FAILURE);
-    }
-    strcpy(configFile, currentPath);
-    strcat(strcat(configFile, "/"), CONFIG_FILE);
+    strcpy(configFile, GetConfig(configFile));
 
     /// Set uploadFile.
-    DIR *dir = opendir(UPLOAD_PATH);
-    if (!dir){
-        if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
-            perror("ワークフォルダーの作成に失敗しました.\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    strcat(strcat(uploadFile, UPLOAD_PATH),UPLOAD_FILE);
+    strcpy(uploadFile, SetUploadFile(uploadFile));
 
     FILE *fp; //FILE structure.
 
@@ -146,7 +128,7 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
     /// Opening message.
-    printf("センサーの読み取りを開始します.\nセンサーのシリアルコードは, %s です.\n\n", deviceMarking);
+    printf("センサーの読み取りを開始します.\nセンサーのシリアルコードは %s です.\n\n", deviceMarking);
         
     if (StartContinuousMeasurement() != NO_ERROR) {
         perror("センサーを連続読み出しモードに設定できませんでした... プログラムを終了します.\n");
@@ -158,10 +140,11 @@ int main(int argc, char *argv[]){
 
     /** main loop */
     for (;;) {
-        static bool flag = 0, rept = 0;
+        static uint8_t flag = 0, rept = 0;
         time_t timer;
         int year, month, day, hour, minute, second;
         char dateNow[32], timeNow[16], now[48];
+
         /** Case 0: Using a data logger connecting one or many sensors,
          * and it is connected to a lap-top computer via serial communication interface. */
 
@@ -269,8 +252,9 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor)
     ans[0] = '\0';
     putchar('\n');
     /** Set Sensor points */
-    while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
-        int8_t *res = (int8_t*)-1;
+    // while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
+    while(true){
+        int8_t res = -1;
 
         for(i = 0; i < place.num; i++){
             printf("ポイント(センサー)名を入力してください... ");
@@ -279,25 +263,22 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor)
             scanf("%s", sensor[i].unit);
             sensor[i].id = i + 1;
         }
+
+        DisplaySetting(place, sensor);
         putchar('\n');
-        printf("測定サイト: \"%s\" (測定ポイント数 %d)の測定ポイントは\n", place.name, place.num);
-        printf("センサーID,センサー名称,測定単位\n");
-        for(i = 0; i < place.num; i++){
-            printf("%2hhd, %-8s, %2s\n", sensor[i].id, sensor[i].name, sensor[i].unit); 
-        }
-        putchar('\n');
-        printf("確認OKの場合は\"y\",\n変更する場合は\"n\"を入力してください.\n");
         
+        printf("確認OKの場合は\"y\",\n変更する場合は\"n\"を入力してください.\n");     
         scanf("%s", ans);
         if(strcmp(ans, "y") == 0) break;
         else if(strcmp(ans, "n") == 0){
+            // printf("プログラムを終了します.\n");
             printf("修正する項目の番号を入力してください\n");
             printf("0 ... 測定サイト名\n");
             printf("1 ... センサーポイント数\n");
             printf("2 ... センサー設定\n");
-            scanf("%hhd", res);
-            while(*res < 0 || *res > 2){
-                switch(*res){
+            scanf("%hhd", &res);
+            while(res < 0 || res > 2){
+                switch(res){
                     case 0:
                         printf("すべて変更します\n");
                         BuildConfig(f, place, sensor);
@@ -315,10 +296,9 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor)
                 }
                 break;
             }
-            // break;
+            break;
         }
     }
-    printf("main_#315 I'm here");
 
     ans[0] = '\0';
     putchar('\n');
@@ -344,7 +324,7 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor)
 void DisplayConfig(char *f)
 {
     char readLine[LINE_SIZE];
-    int8_t i;
+    // int8_t i;
     LOCATION lo;
     POINT se[16];
 
@@ -380,11 +360,7 @@ void DisplayConfig(char *f)
         }
     }
     fclose(fp);
-    putchar('\n');
-    printf("測定サイト: \"%s\" (測定ポイント数 %d)\n", lo.name, lo.num);
-    for(i = 0; i < lo.num; i++){
-        printf("センサーID: %2hhd, センサー名称: %-8s, 単位: %2s\n", se[i].id, se[i].name, se[i].unit); 
-    }
+    DisplaySetting(lo, se);
     putchar('\n');
     return;
 }
