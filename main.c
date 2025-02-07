@@ -140,7 +140,7 @@ int main(int argc, char *argv[]){
 
     /** main loop */
     for (;;) {
-        static uint8_t flag = 0, rept = 0;
+        static uint8_t flgRec = 0, flgDisp = 0;
         time_t timer;
         int year, month, day, hour, minute, second;
         char dateNow[32], timeNow[16], now[48];
@@ -150,10 +150,10 @@ int main(int argc, char *argv[]){
 
         /** Case 1: Using a sensirion sensor and it embedded temperature and humidity sensor in it,
          * and it is connected with Raspberry Pi via I2C interface.  */
-        SDATA Result = {
-            Sensor[0].name, Sensor[1].name, Sensor[2].name, 
-            Sensor[0].data, Sensor[1].data, Sensor[2].data
-        };
+        // SDATA Result = {
+        //     Sensor[0].name, Sensor[1].name, Sensor[2].name, 
+        //     Sensor[0].data, Sensor[1].data, Sensor[2].data
+        // };
 
         usleep(500000);
         // 2023.11.24 Get the latest tim
@@ -171,13 +171,32 @@ int main(int argc, char *argv[]){
         sprintf(now, "%s %s", dateNow, timeNow);
 
         if(second % 5 == 0){
-            if(rept == 0){
-                rept = 1;
+            if(flgDisp == 0){
+                flgDisp = 1;
+                float data1, data2, data3;
+                int8_t i;
 
                 /// Display current time' information on console.
                 printf("%s @%s\n", dateNow, timeNow);
-                /// Read sensor' data and display on the screen.
-                Result = ReadMeasure(Result);
+                
+                /// Read Sensirion sensor' data and display on the screen.
+                if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+                    for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
+                    printf("Failed to read Sensor data.\n");
+
+                }else{
+                    Sensor[0].data = data1;
+                    Sensor[1].data = data2;
+                    Sensor[2].data = data3;
+                }
+                
+                printf("%s\n", Site.name);
+                for(i = 0; i < Site.num; i++){
+                    printf("%s: %.1f %s\n", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                }
+                
+                /// For Sensirion's sensor
+                // Result = ReadMeasure(Result);
                 /** The structures of the Result
                  * char *gasName;       // gas name
                  * char *humid;         // humidity
@@ -185,31 +204,54 @@ int main(int argc, char *argv[]){
                  * float gas;           // gas concentration value
                  * float humidity;      // humidity value
                  * float temperature;   // temperature value */
-                printf("%s\n", Site.name);
-                printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
-                printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
-                printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
+
+                // SDATA ReadMeasure(SDATA r){
+                //     float data1, data2, data3;
+                //     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+                //         r.gas = 0.0;
+                //         r.humidity = 0.0;
+                //         r.temperature = 0.0;
+                //         printf("Failed to read Sensor data.\n");
+                //     }else{
+                //         r.gas = data1;
+                //         r.humidity = data2;
+                //         r.temperature = data3;
+                //     }    
+                //     return r;
+                // }
+                // printf("%s\n", Site.name);
+                // printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
+                // printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
+                // printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
             }
 
-            if(second == 0 && flag == 0){
-                flag = 1;
+            if(second == 0 && flgRec == 0){
+                flgRec = 1;
+                int8_t i;
+
                 FILE *fp = fopen(uploadFile,"w");
+                
                 if (fp == NULL){
                     perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
                     return -1;
                 }
+
+                /// Record header.
                 fprintf(fp, "measured_date,measured_value,sensor,place\n");
-                fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
-                fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
-                fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
+                for(i = 0; i < Site.num; i++){
+                    fprintf(fp, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
+                }
+                // fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
+                // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
+                // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
 
                 fclose(fp);
                 printf("Saved into \"%s\"\n\n", uploadFile);
 
             }
         }else{
-            rept = 0;
-            flag = 0;
+            flgDisp = 0;
+            flgRec = 0;
         }
         // 2023.11.24 Read measured data and display on terminal
         // 2024.11.12 #233 in tcp_com.c
