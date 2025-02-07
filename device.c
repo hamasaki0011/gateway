@@ -1,6 +1,4 @@
-/*
- * This is a Raspberry Pi program controls sensor board via i2c. 
- */
+/** This is a Raspberry Pi program controls sensor board via i2c.  */
 #include <stdio.h>  // printf(), strcmp(), fopen()
 #include <unistd.h> // for sleep()/usleep(), for close
 #include <stdio.h>      // printf(), strcmp(), fopen()
@@ -129,24 +127,6 @@ int8_t BlankRead(){
     return 0;    
 }
 
-SDATA ReadMeasure(SDATA r){
-    float data1, data2, data3;
-    
-    if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
-        r.gas = 0.0;
-        r.humidity = 0.0;
-        r.temperature = 0.0;
-        printf("Failed to read Sensor data.\n");
-
-    }else{
-        r.gas = data1;
-        r.humidity = data2;
-        r.temperature = data3;
-        
-    }    
-    return r;
-}
-
 int16_t StopMeasurement(void) {
     int16_t error;
     uint8_t buffer[2];
@@ -191,16 +171,6 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
 }
 
 
-/** Initialize all hard- and software components that are needed for the I2C communication. */
-/*
-void i2c_hal_init(void) {
-    // open i2c adapter
-    i2c_device = open(I2C_DEVICE_PATH, O_RDWR);
-    //if (i2c_device == -1)
-    //    return; // no error handling
-    return; // no error handling
-}
-*/
 /** Execute one write transaction on the I2C bus, sending a given number of bytes. 
  * The bytes in the supplied buffer must be sent to the given address. 
  * If the slave device does not acknowledge any of the bytes, an error shall be returned.

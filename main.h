@@ -1,13 +1,16 @@
-/*
- * Copyright (c) 2024
- */
+/* Copyright (c) 2024 */
 
 #ifndef MAIN_H
 #define MAIN_H
 
-/** Typedef section for types commonly defined in <stdint.h>
- * If your system does not provide stdint headers, please define them
- * accordingly. Please make sure to define int64_t and uint64_t.*/
+/* `#include <stdint.h>` is a preprocessor directive that includes 
+the standard C header file `stdint.h` in your code. 
+This header file defines a set of typedefs for integer types with specified widths, 
+which are commonly used in C programming to ensure portability and consistency of 
+integer types across different platforms. 
+By including `stdint.h`, you can use types like `int8_t`, `uint8_t`, `int16_t`, 
+`uint16_t`, `int32_t`, `uint32_t`, `int64_t`, `uint64_t`, etc., with known sizes 
+regardless of the underlying system architecture. */
 #include <stdint.h>
 
 /** define structure **/
@@ -23,9 +26,6 @@
 *  int tm_yday;     // 年内の通し日数 [0-365] 0から始まることに注意
 *  int tm_isdst;    // 夏時間が無効であれば 0 }; */
 
-//static char sensorName[16][256];
-//static int8_t sensorID[16];
-//static char sensorUnit[16][16];
 typedef struct{
     char name[128]; // location_name
     int8_t num;     // sensor count
@@ -37,19 +37,22 @@ typedef struct{
     
     float data;     // measured data
 }POINT;
-typedef struct{
-    char *gasName;  // gasName
-    char *humid;    // humidity
-    char *temp;     // temperature
-    
-    float gas;
-    float humidity;
-    float temperature;
-}SDATA;
 
-char* BuildConfig(char*, LOCATION, POINT*);
+/** The function `BuildConfigAll` takes three parameters:
+ a `char*` representing a configuration string,
+ a `LOCATION` struct containing location information, 
+ and an array of `POINT` structs representing sensor data. */
+char* BuildConfigAll(char*, LOCATION, POINT*);
+char* BuildConfigPointNum(char*, LOCATION, POINT*);
+
+/*The `void DisplayConfig(char*);` function declaration
+ in the `main.h` header file is defining a function named `DisplayConfig` 
+ that takes a single parameter of type `char*`. 
+ This function is expected to display or output some configuration information 
+ based on the provided `char*` parameter.
+ The actual implementation of this function is not provided in the header file, 
+ so it would need to be defined in a corresponding source file (.c file) 
+ where the functionality of displaying the configuration information is implemented.*/
 void DisplayConfig(char*);
-//LOCATION SetLocationName(char*, int8_t);
-//SENSOR SetSensor(char*, uint8_t, char*);
 
 #endif /* MAIN_H */
