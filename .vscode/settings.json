@@ -6,6 +6,7 @@
     "files.associations": {
         "*.py": "python",
         "*.html": "django-html",
-        "string.h": "c"
+        "string.h": "c",
+        "stdbool.h": "c"
     }
 }

@@ -48,6 +48,7 @@ typedef struct{
 }SDATA;
 
 char* BuildConfig(char*, LOCATION, POINT*);
+void DisplayConfig(char*);
 //LOCATION SetLocationName(char*, int8_t);
 //SENSOR SetSensor(char*, uint8_t, char*);
 
