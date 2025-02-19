@@ -8,7 +8,7 @@
 #define FILE_NAME_SIZE  256
 #define PATH_SIZE       128
 #define CONFIG_FILE     "config"            // Setup file
-#define UPLOAD_FILE     "work.csv"          // Upload file
+#define UPLOAD_FILE     "testWork.csv"          // Upload file
 #define UPLOAD_PATH     "../upload_file/"  // Upload file
 
 char* GetConfig(char*);
