@@ -1,3 +1,5 @@
 .git/
-comspec.h
-comspec.c
+.vscode/
+config
+sensing
+upload_file/

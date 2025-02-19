@@ -9,7 +9,6 @@
 #include <unistd.h>     // read(), write(), usleep()
 
 #include "common.h"
-//#include "foperation.h"
 #include "device.h"
 #include "main.h"
 

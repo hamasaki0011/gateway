@@ -10,8 +10,6 @@
  * accordingly. Please make sure to define int64_t and uint64_t.*/
 #include <stdint.h>
 
-#include "foperation.h"
-
 /** define structure **/
 /** tm structure
 * struct tm {
@@ -32,7 +30,6 @@ typedef struct{
     char name[128]; // location_name
     int8_t num;     // sensor count
 }LOCATION;
-
 typedef struct{
     uint8_t id;     // sensor_ID
     char name[256]; // sensor_name
@@ -40,7 +37,6 @@ typedef struct{
     
     float data;     // measured data
 }POINT;
-
 typedef struct{
     char *gasName;  // gasName
     char *humid;    // humidity
@@ -50,6 +46,9 @@ typedef struct{
     float humidity;
     float temperature;
 }SDATA;
+
+char* BuildConfig(char*, LOCATION, POINT*);
+void DisplayConfig(char*);
 //LOCATION SetLocationName(char*, int8_t);
 //SENSOR SetSensor(char*, uint8_t, char*);
 
