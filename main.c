@@ -21,24 +21,11 @@
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
 
-/**
- * The main function reads configuration settings, initializes sensor devices, continuously reads
- * sensor data, and saves the data periodically to a file.
- * 
- * @param argc `argc` is the argument count, which represents the number of arguments passed to the
- * program when it is executed from the command line. It includes the name of the program itself as the
- * first argument.
- * @param argv In the provided code snippet, the `argv` parameter in the `main` function represents an
- * array of strings that contain the command-line arguments passed to the program when it is executed.
- * Each element of the `argv` array is a null-terminated C-string, where `argv[0]`
- * 
- * @return The `main` function is returning an integer value of 0, which typically indicates successful
- * execution of the program.
- */
 int main(int argc, char *argv[]){
     /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
-    static char uploadFile[FILE_NAME_SIZE], configFile[FILE_NAME_SIZE];
-    char readLine[LINE_SIZE], ans[2];
+    static char uploadFile[FILE_NAME_SIZE];
+    static char configFile[FILE_NAME_SIZE];
+    char readLine[LINE_SIZE];
     unsigned char deviceMarking[32];
     
     struct tm *local;
@@ -60,14 +47,17 @@ int main(int argc, char *argv[]){
     FILE *fp; //FILE structure.
     fp = fopen(configFile, "r");
     /// Normal operation.
-    if(fp == NULL){
-        if(argc <= 1){
+    if(argc <= 1){
+        char ans[2];
+
+//        fp = fopen(configFile, "r");
+        if (fp == NULL){
             printf("設定ファイルがありません.\n作成しますか？\n");
             printf("作成する場合は ... \"y\"を\n中止する場合は(プログラムを終了します.) ... \"n\"を入力してください.\n");
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
                 if(strcmp(ans, "y") == 0){
-                    fp = fopen(BuildConfigAll(configFile, Site, Sensor), "r");
+                    fp = fopen(BuildConfig(configFile, Site, Sensor), "r");
                     break;
                 }
                 else if(strcmp(ans, "n") == 0) {
@@ -76,20 +66,23 @@ int main(int argc, char *argv[]){
                     return -1;
                 }
             }
+        }     
 
-        }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
+    }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
+        char ans[2];
+
+//        fp = fopen(configFile, "r");
+        if (fp == NULL){
             printf("設定ファイルを作成します.\n");
-            fp = fopen(BuildConfigAll(configFile, Site, Sensor), "r");
-        }
-    }else{
-        if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
+            fp = fopen(BuildConfig(configFile, Site, Sensor), "r");
+        }else{
             printf("設定ファイルが既に存在します.\n");
             DisplayConfig(configFile);
             printf("設定ファイルを作り直す場合は... \"y\"を\n中止する場合は... \"n\"を入力してください.\n");
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
                 if(strcmp(ans, "y") == 0){
-                    fp = fopen(BuildConfigAll(configFile, Site, Sensor), "r");
+                    fp = fopen(BuildConfig(configFile, Site, Sensor), "r");
                     break;
                 }
                 else if(strcmp(ans, "n") == 0) break;
@@ -157,9 +150,13 @@ int main(int argc, char *argv[]){
 
         /** Case 1: Using a sensirion sensor and it embedded temperature and humidity sensor in it,
          * and it is connected with Raspberry Pi via I2C interface.  */
+        // SDATA Result = {
+        //     Sensor[0].name, Sensor[1].name, Sensor[2].name, 
+        //     Sensor[0].data, Sensor[1].data, Sensor[2].data
+        // };
 
         usleep(500000);
-        // 2023.11.24 Get the latest tim
+        // 2023.11.24 Get the latest time
         timer = time(NULL);  // For measurement system base timer.
         local = localtime(&timer);  // Convert to localtime
         // Read year, month, day, hour, minute, second to current variables.
@@ -180,7 +177,7 @@ int main(int argc, char *argv[]){
                 int8_t i;
 
                 /// Display current time' information on console.
-                printf("%s\n", dateNow);
+                printf("%s @%s\n", dateNow, timeNow);
                 
                 /// Read Sensirion sensor' data and display on the screen.
                 if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
@@ -193,11 +190,40 @@ int main(int argc, char *argv[]){
                     Sensor[2].data = data3;
                 }
                 
-                printf("%s  @%s\n", Site.name, timeNow);
+                printf("%s\n", Site.name);
                 for(i = 0; i < Site.num; i++){
                     printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
                 }
                 putchar('\n');
+                
+                /// For Sensirion's sensor
+                // Result = ReadMeasure(Result);
+                /** The structures of the Result
+                 * char *gasName;       // gas name
+                 * char *humid;         // humidity
+                 * char *temp;          // temperature
+                 * float gas;           // gas concentration value
+                 * float humidity;      // humidity value
+                 * float temperature;   // temperature value */
+
+                // SDATA ReadMeasure(SDATA r){
+                //     float data1, data2, data3;
+                //     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+                //         r.gas = 0.0;
+                //         r.humidity = 0.0;
+                //         r.temperature = 0.0;
+                //         printf("Failed to read Sensor data.\n");
+                //     }else{
+                //         r.gas = data1;
+                //         r.humidity = data2;
+                //         r.temperature = data3;
+                //     }    
+                //     return r;
+                // }
+                // printf("%s\n", Site.name);
+                // printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
+                // printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
+                // printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
             }
 
             if(second == 0 && flgRec == 0){
@@ -216,6 +242,10 @@ int main(int argc, char *argv[]){
                 for(i = 0; i < Site.num; i++){
                     fprintf(fp, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
                 }
+                // fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
+                // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
+                // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
+
                 fclose(fp);
                 printf("Saved into \"%s\"\n\n", uploadFile);
 
@@ -241,23 +271,10 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-/**
- * The function `BuildConfigAll` takes user input to create a configuration file with location and sensor
- * information.
- * 
- * @param f The `f` parameter in the `BuildConfigAll` function is a pointer to a character array, which is
- * used to store the file name where the configuration settings will be saved. The function reads user
- * input to set the location name, number of sensor points, sensor names, and units, and then
- * @param place The `place` parameter in the `BuildConfigAll` function represents the location information
- * for a measurement site. It includes the following fields:
- * @param sensor The `sensor` parameter in the `BuildConfigAll` function is a pointer to an array of
- * `POINT` structures. Each `POINT` structure represents a sensor point and contains the following
- * fields:
- * 
- * @return The function `BuildConfigAll` is returning a `char*` which is the file name `f` that was passed
- * as an argument to the function.
- */
-char* BuildConfigAll(char *f, LOCATION place, POINT* sensor)
+/** Build "config" file.
+ *  path:   currentPath
+ *  return value: Not 0 means exist, 0 means Not exist. */
+char* BuildConfig(char *f, LOCATION place, POINT* sensor)
 {
     char ans[2];
     int8_t i;
@@ -299,104 +316,15 @@ char* BuildConfigAll(char *f, LOCATION place, POINT* sensor)
         else if(strcmp(ans, "n") == 0){
             // printf("プログラムを終了します.\n");
             printf("修正する項目の番号を入力してください\n");
-            printf("0 ... すべての項目\n");
+            printf("0 ... 測定サイト名\n");
             printf("1 ... センサーポイント数\n");
             printf("2 ... センサー設定\n");
             scanf("%hhd", &res);
-            while(true){
+            while(res < 0 || res > 2){
                 switch(res){
                     case 0:
                         printf("すべて変更します\n");
-                        /*これ以降の表示が重複して現れる*/
-                        BuildConfigAll(f, place, sensor);
-                        break;
-                    case 1:
-                        printf("センサーポイント数を変更します。\n");
-                        /*少なく変えると、以前の値も有効となる
-                        多く入れるとエラーになる?どこで*/
-                        BuildConfigPointNum(f, place, sensor);
-                        break;
-                    case 2:
-                        printf("センサー設定を変更します。\n");
-                        // BuildConfig(f, place, sensor);
-                        break;                    
-                    default:
-                        ;
-                }
-                break;
-            }
-            break;
-        }
-    }
-
-    ans[0] = '\0';
-    putchar('\n');
-    
-    FILE *fs = fopen(f,"w");
-
-    if (fs == NULL){
-        perror("設定ファイルを開けません.\n");
-        exit(EXIT_FAILURE);
-    }
-    fprintf(fs, "location,%s,%d\n",place.name,place.num);
-    for(i =0; i < place.num; i++){
-        fprintf(fs, "point,%hhd,%s,%s\n",sensor[i].id, sensor[i].name, sensor[i].unit);
-    }
-    fclose(fs);
-    printf("新しい設定ファイルでプログラムを実行します.\n");
-    return f;
-}
-
-char* BuildConfigPointNum(char *f, LOCATION place, POINT* sensor)
-{
-    char ans[2];
-    int8_t i;
-
-    /** Set Site name */
-    while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
-        printf("測定ポイント数(センサー数)を入力してください... ");
-        scanf("%hhd", &place.num);
-        putchar('\n');
-        printf("測定サイト名は... \"%s\"\n測定ポイント数は... \"%d\"\n", place.name, place.num);
-        putchar('\n');
-        printf("確認OKの場合は\"y\", 変更する場合は\"n\"を入力してください.\n");
-        scanf("%s", ans);
-        if(strcmp(ans, "y") == 0) break;
-    }
-    ans[0] = '\0';
-    putchar('\n');
-    /** Set Sensor points */
-    // while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
-    while(true){
-        int8_t res = -1;
-
-        for(i = 0; i < place.num; i++){
-            printf("ポイント(センサー)名を入力してください... ");
-            scanf("%s", sensor[i].name);
-            printf("測定値の単位を入力してください... ");
-            scanf("%s", sensor[i].unit);
-            sensor[i].id = i + 1;
-        }
-
-        DisplaySetting(place, sensor);
-        putchar('\n');
-        
-        printf("確認OKの場合は\"y\",\n変更する場合は\"n\"を入力してください.\n");     
-        scanf("%s", ans);
-        if(strcmp(ans, "y") == 0) break;
-        else if(strcmp(ans, "n") == 0){
-            // printf("プログラムを終了します.\n");
-            printf("修正する項目の番号を入力してください\n");
-            printf("0 ... すべての項目\n");
-            printf("1 ... センサーポイント数\n");
-            printf("2 ... センサー設定\n");
-            scanf("%hhd", &res);
-            while(true){
-                switch(res){
-                    case 0:
-                        printf("すべて変更します\n");
-                        BuildConfigAll(f, place, sensor);
-
+                        BuildConfig(f, place, sensor);
                         break;
                     case 1:
                         printf("センサーポイント数を変更します。\n");
@@ -426,23 +354,16 @@ char* BuildConfigPointNum(char *f, LOCATION place, POINT* sensor)
     }
     fprintf(fs, "location,%s,%d\n",place.name,place.num);
     for(i =0; i < place.num; i++){
-        printf("num is %d\n", place.num);
         fprintf(fs, "point,%hhd,%s,%s\n",sensor[i].id, sensor[i].name, sensor[i].unit);
     }
     fclose(fs);
-    printf("新しい設定ファイルでプログラムを実行します.\n");
+    
     return f;
 }
 
-/**
- * The function `DisplayConfig` reads a configuration file, extracts location and sensor information,
- * and then displays the settings.
- * 
- * @param f The parameter `f` in the `DisplayConfig` function is a pointer to a character array, which
- * represents the file name of the configuration file that needs to be read and processed.
- * 
- * @return The function `DisplayConfig` is returning `void`, which means it does not return any value.
- */
+/** Display "config" file on screen.
+ *  f:   configFile
+ *  return value: None. */
 void DisplayConfig(char *f)
 {
     char readLine[LINE_SIZE];
