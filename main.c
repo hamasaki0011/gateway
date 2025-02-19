@@ -95,48 +95,7 @@ int main(int argc, char *argv[]){
                 else if(strcmp(ans, "n") == 0) break;
             }
         }
-    }        
-
-    // if(argc <= 1){
-    //     char ans[2];
-
-    //     if (fp == NULL){
-    //         printf("設定ファイルがありません.\n作成しますか？\n");
-    //         printf("作成する場合は ... \"y\"を\n中止する場合は(プログラムを終了します.) ... \"n\"を入力してください.\n");
-    //         while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
-    //             scanf("%s", ans);        
-    //             if(strcmp(ans, "y") == 0){
-    //                 fp = fopen(BuildConfig(configFile, Site, Sensor), "r");
-    //                 break;
-    //             }
-    //             else if(strcmp(ans, "n") == 0) {
-    //                 /* ［要検討］作成しない場合の対処 */
-    //                 printf("プログラムを終了します.\n");
-    //                 return -1;
-    //             }
-    //         }
-    //     }     
-
-    // }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
-    //     char ans[2];
-
-    //     if (fp == NULL){
-    //         printf("設定ファイルを作成します.\n");
-    //         fp = fopen(BuildConfig(configFile, Site, Sensor), "r");
-    //     }else{
-    //         printf("設定ファイルが既に存在します.\n");
-    //         DisplayConfig(configFile);
-    //         printf("設定ファイルを作り直す場合は... \"y\"を\n中止する場合は... \"n\"を入力してください.\n");
-    //         while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
-    //             scanf("%s", ans);        
-    //             if(strcmp(ans, "y") == 0){
-    //                 fp = fopen(BuildConfig(configFile, Site, Sensor), "r");
-    //                 break;
-    //             }
-    //             else if(strcmp(ans, "n") == 0) break;
-    //         }
-    //     }
-    // }
+    }
 
     /// Load config file.
     while(fgets(readLine, LINE_SIZE, fp) != NULL){
@@ -467,7 +426,7 @@ char* BuildConfigPointNum(char *f, LOCATION place, POINT* sensor)
     }
     fprintf(fs, "location,%s,%d\n",place.name,place.num);
     for(i =0; i < place.num; i++){
-        printf("num is %d\", place.num);
+        printf("num is %d\n", place.num);
         fprintf(fs, "point,%hhd,%s,%s\n",sensor[i].id, sensor[i].name, sensor[i].unit);
     }
     fclose(fs);
