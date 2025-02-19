@@ -42,7 +42,7 @@ typedef struct{
  a `char*` representing a configuration string,
  a `LOCATION` struct containing location information, 
  and an array of `POINT` structs representing sensor data. */
-char* BuildConfig(char*, LOCATION, POINT*);
+char* BuildConfig(char*, LOCATION, POINT*, char*);
 char* BuildConfigPointNum(char*, LOCATION, POINT*);
 
 /*The `void DisplayConfig(char*);` function declaration
