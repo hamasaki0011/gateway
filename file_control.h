@@ -13,9 +13,11 @@
 #define UPLOAD_PATH     "../upload_file/"  // Upload file
 
 char* GetConfig(char*);
+void LoadConfigSettings(char*, LOCATION, POINT*, char*);
 char* SetUploadFile(char*);
-void DisplaySetting(LOCATION, POINT*, char*);
+void DisplayFormat(LOCATION, POINT*, char*);
 void DisplayConfig(char*);
 char* BuildConfig(char*, LOCATION, POINT*, char*);
+char* ReadJsonFile(char*, char*);
 
 #endif /* MAIN_H */

@@ -27,6 +27,12 @@ regardless of the underlying system architecture. */
 *  int tm_isdst;    // 夏時間が無効であれば 0 }; */
 
 typedef struct{
+    char key[64];
+    char c_value[64];
+    int i_value;
+    float f_value;
+}SETUP;
+typedef struct{
     char name[128]; // location_name
     int8_t num;     // sensor count
 }LOCATION;

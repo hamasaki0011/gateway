@@ -6,6 +6,7 @@
 #include <sys/stat.h>   // mkdir()
 #include <stdbool.h>    // For bool operation, true and false.
 
+
 #include "file_control.h"
 #include "main.h"
 
@@ -20,6 +21,47 @@ char* GetConfig(char* file){
     strcat(strcat(strcpy(file, currentPath), "/"), CONFIG_FILE);
 
     return file;
+}
+
+void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
+{
+    char readLine[LINE_SIZE];
+
+    FILE *f; //FILE structure.
+    f = fopen(file, "r");
+
+    /// Load config file.
+    while(fgets(readLine, LINE_SIZE, f) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(readLine, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(s.name, ptr);
+
+            ptr = strtok(NULL, ",");    // Number
+            s.num = atoi(ptr);            
+        }else if(strcmp(ptr, "point") == 0){
+            ptr = strtok(NULL, ",");    // Sensor ID
+            p[id].id = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(p[id].name, ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(p[id].unit, ptr);
+
+            id++;
+            
+        }else{
+            ptr = strtok(NULL, ",");    // upload file name
+            strcpy(u_file, ptr);
+
+        }
+    }
+    fclose(f);
+
 }
 
 char* SetUploadFile(char* uploadFile){
@@ -37,7 +79,7 @@ char* SetUploadFile(char* uploadFile){
     return uploadFile;
 }
 
-void DisplaySetting(LOCATION lo, POINT* se, char* uf){
+void DisplayFormat(LOCATION lo, POINT* se, char* uf){
     int8_t i;
 
     printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
@@ -52,6 +94,9 @@ void DisplaySetting(LOCATION lo, POINT* se, char* uf){
     return;
 }
 
+/** Display "config" file on screen.
+ *  f:   configFile
+ *  return value: None. */
 void DisplayConfig(char *f)
 {
     char readLine[LINE_SIZE];
@@ -97,11 +142,14 @@ void DisplayConfig(char *f)
         }
     }
     fclose(fp);
-    DisplaySetting(lo, se, uf);
+    DisplayFormat(lo, se, uf);
     putchar('\n');
     return;
 }
 
+/** Build "config" file.
+ *  path:   currentPath
+ *  return value: Not 0 means exist, 0 means Not exist. */
 char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
 {
     char ans[2];
@@ -135,7 +183,7 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
             sensor[i].id = i + 1;
         }
 
-        DisplaySetting(place, sensor, uf);
+        DisplayFormat(place, sensor, uf);
         putchar('\n');
         
         printf("確認OKの場合は\"y\",\n変更する場合は\"n\"を入力してください.\n");     
@@ -187,4 +235,41 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
     fclose(fs);
     
     return f;
+}
+
+char* ReadJsonFile(char* f, char* str)
+{
+    char line[512];
+    char *qtr;
+    char s[1024];
+    char buf[1024];
+    int x;
+
+    SETUP json;
+    
+    FILE *fj = fopen(f, "r");
+
+    str[0] = '\0';
+    while(fgets(line, LINE_SIZE, fj) != NULL){
+        char *ptr;
+
+        ptr = strtok(line, " \n");
+        strcat(str, ptr);
+
+    }
+    fclose(fj);
+
+    strcat(s, str);
+    // 最初にbuf がどうなっているのか整数でみてみる
+    for (int i = 0 ; i < 20 ; i++){
+        printf("%d\n", buf[i]);
+    }
+    //qtr = strtok(s, "{");
+    x = fgetc(s);
+
+    printf("file_#260 str is %s\n", str);
+    printf("file_#261 qtr is %s\n", qtr);
+
+    return str;
+
 }
