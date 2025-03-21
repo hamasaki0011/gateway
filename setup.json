@@ -1,0 +1,30 @@
+{
+    "header":
+    [
+        "location",
+        "point-number",
+        "sensor-point",
+        "upload-file"
+    ],
+    "location":"株式会社A",
+    "point-number":3,
+    "sensor-point":
+    [
+        {
+            "id":1,
+            "name":"ホルムアルデヒド濃度",
+            "unit":"ppb"
+        },
+        {
+            "id":2,
+            "name":"相対湿度",
+            "unit":"%RH"
+        },
+        {
+            "id":3,
+            "name":"周囲温度",
+            "unit":"℃"
+        }
+    ],
+    "upload-file":"work.csv"
+}

@@ -1,5 +1,6 @@
 .git/
 .vscode/
 config
+config_backup
 sensing
 upload_file/

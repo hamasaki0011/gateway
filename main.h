@@ -27,6 +27,12 @@ regardless of the underlying system architecture. */
 *  int tm_isdst;    // 夏時間が無効であれば 0 }; */
 
 typedef struct{
+    char key[64];
+    char c_value[64];
+    int i_value;
+    float f_value;
+}SETUP;
+typedef struct{
     char name[128]; // location_name
     int8_t num;     // sensor count
 }LOCATION;
@@ -42,7 +48,7 @@ typedef struct{
  a `char*` representing a configuration string,
  a `LOCATION` struct containing location information, 
  and an array of `POINT` structs representing sensor data. */
-char* BuildConfig(char*, LOCATION, POINT*);
+char* BuildConfig(char*, LOCATION, POINT*, char*);
 char* BuildConfigPointNum(char*, LOCATION, POINT*);
 
 /*The `void DisplayConfig(char*);` function declaration
