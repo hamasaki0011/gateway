@@ -23,7 +23,13 @@ int main(int argc, char *argv[]){
     /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
     static char uploadFile[FILE_NAME_SIZE];
     static char configFile[FILE_NAME_SIZE];
+<<<<<<< HEAD
     static char setFile[] = "setup.json";
+=======
+    static char logFile[FILE_NAME_SIZE];
+    char readLine[LINE_SIZE];
+    char logMessage[256];
+>>>>>>> 1c170112868f9554a71e7d1a16e03042093437f8
     unsigned char deviceMarking[32];
     //char line[512];
     char json_str[1024];
@@ -43,6 +49,10 @@ int main(int argc, char *argv[]){
 
     /// Set uploadFile.
     strcpy(uploadFile, SetUploadFile(uploadFile));
+    
+    /// Set logFile.
+    strcpy(logFile, SetLogFile(logFile));
+//    printf("main #48_log file is %s\n", logFile);
 
     printf("main_#47 read json file\n\n");
     ReadJsonFile(setFile, json_str);
@@ -113,8 +123,12 @@ int main(int argc, char *argv[]){
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
+        Logging(logFile, "センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
         exit(EXIT_FAILURE);
     }
+    
+    Logging(logFile, "センサーデバイスの初期化\n");
+    
     /// Obtain the device marking.
     if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
         perror("センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n");

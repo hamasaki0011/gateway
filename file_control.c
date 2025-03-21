@@ -79,7 +79,39 @@ char* SetUploadFile(char* uploadFile){
     return uploadFile;
 }
 
+<<<<<<< HEAD
 void DisplayFormat(LOCATION lo, POINT* se, char* uf){
+=======
+char* SetLogFile(char* logFile){
+
+    DIR *dir = opendir(UPLOAD_PATH);
+    
+    if (!dir){
+        if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
+            perror("ワークフォルダーの作成に失敗しました.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    strcat(strcat(logFile, UPLOAD_PATH),LOG_FILE);
+
+    return logFile;
+}
+
+int8_t Logging(char* log, char* logMessage)
+{
+    int8_t res = 0;
+    FILE *fw; //FILE structure.
+    
+    fw = fopen(log, "w");
+    printf("%s", logMessage);
+    
+    fclose(fw);
+    printf("file_control #60 close log and res is %d\n", res);
+    return res;
+}
+
+void DisplaySetting(LOCATION lo, POINT* se){
+>>>>>>> 1c170112868f9554a71e7d1a16e03042093437f8
     int8_t i;
 
     printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
@@ -93,6 +125,7 @@ void DisplayFormat(LOCATION lo, POINT* se, char* uf){
     printf("アップロードファイル名: %s\n", uf);
     return;
 }
+<<<<<<< HEAD
 
 /** Display "config" file on screen.
  *  f:   configFile
@@ -273,3 +306,5 @@ char* ReadJsonFile(char* f, char* str)
     return str;
 
 }
+=======
+>>>>>>> 1c170112868f9554a71e7d1a16e03042093437f8
