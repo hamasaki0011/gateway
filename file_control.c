@@ -36,6 +36,34 @@ char* SetUploadFile(char* uploadFile){
     return uploadFile;
 }
 
+char* SetLogFile(char* logFile){
+
+    DIR *dir = opendir(UPLOAD_PATH);
+    
+    if (!dir){
+        if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
+            perror("ワークフォルダーの作成に失敗しました.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    strcat(strcat(logFile, UPLOAD_PATH),LOG_FILE);
+
+    return logFile;
+}
+
+int8_t Logging(char* log, char* logMessage)
+{
+    int8_t res = 0;
+    FILE *fw; //FILE structure.
+    
+    fw = fopen(log, "w");
+    printf("%s", logMessage);
+    
+    fclose(fw);
+    printf("file_control #60 close log and res is %d\n", res);
+    return res;
+}
+
 void DisplaySetting(LOCATION lo, POINT* se){
     int8_t i;
 

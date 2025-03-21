@@ -25,7 +25,9 @@ int main(int argc, char *argv[]){
     /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
     static char uploadFile[FILE_NAME_SIZE];
     static char configFile[FILE_NAME_SIZE];
+    static char logFile[FILE_NAME_SIZE];
     char readLine[LINE_SIZE];
+    char logMessage[256];
     unsigned char deviceMarking[32];
     
     struct tm *local;
@@ -43,6 +45,10 @@ int main(int argc, char *argv[]){
 
     /// Set uploadFile.
     strcpy(uploadFile, SetUploadFile(uploadFile));
+    
+    /// Set logFile.
+    strcpy(logFile, SetLogFile(logFile));
+//    printf("main #48_log file is %s\n", logFile);
 
     FILE *fp; //FILE structure.
     fp = fopen(configFile, "r");
@@ -120,8 +126,12 @@ int main(int argc, char *argv[]){
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
+        Logging(logFile, "センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
         exit(EXIT_FAILURE);
     }
+    
+    Logging(logFile, "センサーデバイスの初期化\n");
+    
     /// Obtain the device marking.
     if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
         perror("センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n");
