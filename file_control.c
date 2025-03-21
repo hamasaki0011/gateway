@@ -4,8 +4,7 @@
 #include <unistd.h>     // sleep()/usleep(), close(), open(), read(), write()
 #include <dirent.h>     // For directory operation.
 #include <sys/stat.h>   // mkdir()
-#include <stdbool.h>    // For bool operation, true and false.
-
+//#include <stdbool.h>    // For bool operation, true and false.
 #include "file_control.h"
 #include "main.h"
 
@@ -20,47 +19,6 @@ char* GetConfig(char* file){
     strcat(strcat(strcpy(file, currentPath), "/"), CONFIG_FILE);
 
     return file;
-}
-
-void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
-{
-    char readLine[LINE_SIZE];
-
-    FILE *f; //FILE structure.
-    f = fopen(file, "r");
-
-    /// Load config file.
-    while(fgets(readLine, LINE_SIZE, f) != NULL){
-        static int8_t id = 0;
-        char *ptr;
-
-        ptr = strtok(readLine, ",");     // First
-        if(strcmp(ptr, "location") == 0){
-            ptr = strtok(NULL, ",");    // Site.name
-            strcpy(s.name, ptr);
-
-            ptr = strtok(NULL, ",");    // Number
-            s.num = atoi(ptr);            
-        }else if(strcmp(ptr, "point") == 0){
-            ptr = strtok(NULL, ",");    // Sensor ID
-            p[id].id = atoi(ptr);             
-
-            ptr = strtok(NULL, ",");    // Sensor NAME
-            strcpy(p[id].name, ptr);
-
-            ptr = strtok(NULL, ",");    // Sensor UNIT
-            strcpy(p[id].unit, ptr);
-
-            id++;
-            
-        }else{
-            ptr = strtok(NULL, ",");    // upload file name
-            strcpy(u_file, ptr);
-
-        }
-    }
-    fclose(f);
-
 }
 
 char* SetUploadFile(char* uploadFile){
@@ -106,6 +64,81 @@ int8_t Logging(char* log, char* logMessage)
     return res;
 }
 
+void DisplaySetting(LOCATION lo, POINT* se){
+    int8_t i;
+
+    printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
+
+    printf("センサーID,センサー名称,測定単位\n");
+    printf("-------------------------------------\n");
+    for(i = 0; i < lo.num; i++){
+        printf("%hhd,%s,%s\n", se[i].id, se[i].name, se[i].unit); 
+    }
+    putchar('\n');
+    return;
+}
+
+/*
+void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
+{
+    char readLine[LINE_SIZE];
+
+    FILE *f; //FILE structure.
+    f = fopen(file, "r");
+
+    /// Load config file.
+    while(fgets(readLine, LINE_SIZE, f) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(readLine, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(s.name, ptr);
+
+            ptr = strtok(NULL, ",");    // Number
+            s.num = atoi(ptr);            
+        }else if(strcmp(ptr, "point") == 0){
+            ptr = strtok(NULL, ",");    // Sensor ID
+            p[id].id = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(p[id].name, ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(p[id].unit, ptr);
+
+            id++;
+            
+        }else{
+            ptr = strtok(NULL, ",");    // upload file name
+            strcpy(u_file, ptr);
+
+        }
+    }
+    fclose(f);
+
+}
+*/
+
+/*
+char* SetUploadFile(char* uploadFile){
+
+    DIR *dir = opendir(UPLOAD_PATH);
+    
+    if (!dir){
+        if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
+            perror("ワークフォルダーの作成に失敗しました.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    strcat(strcat(uploadFile, UPLOAD_PATH),UPLOAD_FILE);
+
+    return uploadFile;
+}
+
+*/
+
 /*
 void DisplayFormat(LOCATION lo, POINT* se, char* uf){
     int8_t i;
@@ -122,24 +155,12 @@ void DisplayFormat(LOCATION lo, POINT* se, char* uf){
     return;
 }
 */
-void DisplaySetting(LOCATION lo, POINT* se){
-    int8_t i;
-
-    printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
-
-    printf("センサーID,センサー名称,測定単位\n");
-    printf("-------------------------------------\n");
-    for(i = 0; i < lo.num; i++){
-        printf("%hhd,%s,%s\n", se[i].id, se[i].name, se[i].unit); 
-    }
-    putchar('\n');
-//    printf("アップロードファイル名: %s\n", uf);
-    return;
-}
 
 /** Display "config" file on screen.
  *  f:   configFile
  *  return value: None. */
+
+/*
 void DisplayConfig(char *f)
 {
     char readLine[LINE_SIZE];
@@ -189,16 +210,19 @@ void DisplayConfig(char *f)
     putchar('\n');
     return;
 }
+ */
 
 /** Build "config" file.
  *  path:   currentPath
  *  return value: Not 0 means exist, 0 means Not exist. */
+
+/*
 char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
 {
     char ans[2];
     int8_t i;
 
-    /** Set Site name */
+    /// Set Site name
     while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
         printf("測定サイト名(Location)を入力してください... ");
         scanf("%s", place.name);
@@ -213,7 +237,7 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
     }
     ans[0] = '\0';
     putchar('\n');
-    /** Set Sensor points */
+    /// Set Sensor points
     // while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
     while(true){
         int8_t res = -1;
@@ -279,6 +303,8 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
     
     return f;
 }
+*/
+
 /*
 char* ReadJsonFile(char* f, char* str)
 {

@@ -11,14 +11,13 @@
 #define CONFIG_FILE     "config"            // Setup file
 #define UPLOAD_FILE     "testWork.csv"          // Upload file
 #define UPLOAD_PATH     "../upload_file/"  // Upload file
-#define LOG_FILE		"senseing.log"     // Log file
+#define LOG_FILE		"sensing.log"     // Log file
 
 char* GetConfig(char*);
 //void LoadConfigSettings(char*, LOCATION, POINT*, char*);
 char* SetUploadFile(char*);
 char* SetLogFile(char*);
 int8_t Logging(char*, char*);
-
 void DisplaySetting(LOCATION, POINT*);
 //void DisplayFormat(LOCATION, POINT*, char*);
 //void DisplayConfig(char*);

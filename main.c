@@ -3,6 +3,7 @@
 #include <string.h>     // memset(), strtok()
 #include <unistd.h>     // sleep()/usleep(), close(), open(), read(), write()
 #include <time.h>       // time()
+#include <stdbool.h>    // For bool operation, true and false.
 // fail~ #include <json/json.h>
 
 #include "common.h"
@@ -13,8 +14,9 @@
 /** Raspberry Pi specific configuration.
  *  Adjust the following define to the device path of the sensor. */
 //#define I2C_DEVICE_PATH         "/dev/i2c-1"
+#define FILE_NAME_SIZE          256
+#define LINE_SIZE               512   // Max. value of number of bytes in line in config file.
 
-#define FILE_NAME_SIZE  256
 #define FAILED_MAKE_RESET       10
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
@@ -23,14 +25,12 @@ int main(int argc, char *argv[]){
     /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
     static char uploadFile[FILE_NAME_SIZE];
     static char configFile[FILE_NAME_SIZE];
-
-//    static char setFile[] = "setup.json";
     static char logFile[FILE_NAME_SIZE];
     char readLine[LINE_SIZE];
     char logMessage[256];
     unsigned char deviceMarking[32];
-    //char line[512];
-//    char json_str[1024];
+//    static char setFile[] = "setup.json";
+    //    char json_str[1024];
     
     struct tm *local;
     LOCATION Site;
@@ -50,8 +50,7 @@ int main(int argc, char *argv[]){
     
     /// Set logFile.
     strcpy(logFile, SetLogFile(logFile));
-//    printf("main #48_log file is %s\n", logFile);
-
+    printf("main #48_log file is %s\n", logFile);
     //printf("main_#47 read json file\n\n");
     //ReadJsonFile(setFile, json_str);
     //printf("main_#58 str is %s\n", json_str);
@@ -79,10 +78,8 @@ int main(int argc, char *argv[]){
                     return -1;
 
                 }
-
             }
-
-        }     
+        }
 
     }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
         char ans[2];
@@ -102,20 +99,68 @@ int main(int argc, char *argv[]){
 
                 }
                 else if(strcmp(ans, "n") == 0){
-                    printf("設定ファイルをロードして,プログラムをスタートします.\n\n");
                     break;
 
                 } 
-
             }
-
         }
-
     }
+
+    /// Load config file.
+    while(fgets(readLine, LINE_SIZE, fp) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+    
+        ptr = strtok(readLine, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(Site.name, ptr);
+    
+            ptr = strtok(NULL, ",");    // Number
+            Site.num = atoi(ptr);            
+        }else{
+            ptr = strtok(NULL, ",");    // Sensor ID
+            Sensor[id].id = atoi(ptr);             
+    
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(Sensor[id].name, ptr);
+    
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(Sensor[id].unit, ptr);
+    
+            id++;
+        }
+    }
+
+    /*
+    /// Load config file.
+//    LoadConfigSettings(configFile, Site, Sensor, uploadFile);    while(fgets(readLine, LINE_SIZE, fp) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(readLine, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(Site.name, ptr);
+
+            ptr = strtok(NULL, ",");    // Number
+            Site.num = atoi(ptr);            
+        }else{
+            ptr = strtok(NULL, ",");    // Sensor ID
+            Sensor[id].id = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(Sensor[id].name, ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(Sensor[id].unit, ptr);
+
+            id++;
+        }
+    }    
+    */
     fclose(fp);
 
-//    LoadConfigSettings(configFile, Site, Sensor, uploadFile);
-    
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
@@ -127,11 +172,14 @@ int main(int argc, char *argv[]){
     
     /// Obtain the device marking.
     if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
-        perror("センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n");
+        strcpy(logMessage,"センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n"); 
+        perror(logMessage);
         exit(EXIT_FAILURE);
     }
+    logMessage[0] = '\0';
     /// Opening message.
-    printf("センサーの読み取りを開始します.\nセンサーのシリアルコードは %s です.\n\n", deviceMarking);
+    strcpy(logMessage, "センサーの読み取りを開始します.\n");
+    printf("センサーのシリアルコードは %s です.\n\n", deviceMarking);
         
     if (StartContinuousMeasurement() != NO_ERROR) {
         perror("センサーを連続読み出しモードに設定できませんでした... プログラムを終了します.\n");
@@ -198,6 +246,36 @@ int main(int argc, char *argv[]){
                     printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
                 }
                 putchar('\n');
+                
+                /// [MEMO] For Sensirion's sensor
+                // Result = ReadMeasure(Result);
+                /** The structures of the Result
+                 * char *gasName;       // gas name
+                 * char *humid;         // humidity
+                 * char *temp;          // temperature
+                 * float gas;           // gas concentration value
+                 * float humidity;      // humidity value
+                 * float temperature;   // temperature value */
+
+                // SDATA ReadMeasure(SDATA r){
+                //     float data1, data2, data3;
+                //     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+                //         r.gas = 0.0;
+                //         r.humidity = 0.0;
+                //         r.temperature = 0.0;
+                //         printf("Failed to read Sensor data.\n");
+                //     }else{
+                //         r.gas = data1;
+                //         r.humidity = data2;
+                //         r.temperature = data3;
+                //     }    
+                //     return r;
+                // }
+                // printf("%s\n", Site.name);
+                // printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
+                // printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
+                // printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
+            
             }
 
             if(second == 0 && flgRec == 0){
