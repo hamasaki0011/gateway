@@ -6,7 +6,6 @@
 #include <sys/stat.h>   // mkdir()
 #include <stdbool.h>    // For bool operation, true and false.
 
-
 #include "file_control.h"
 #include "main.h"
 
@@ -79,9 +78,6 @@ char* SetUploadFile(char* uploadFile){
     return uploadFile;
 }
 
-<<<<<<< HEAD
-void DisplayFormat(LOCATION lo, POINT* se, char* uf){
-=======
 char* SetLogFile(char* logFile){
 
     DIR *dir = opendir(UPLOAD_PATH);
@@ -110,8 +106,8 @@ int8_t Logging(char* log, char* logMessage)
     return res;
 }
 
-void DisplaySetting(LOCATION lo, POINT* se){
->>>>>>> 1c170112868f9554a71e7d1a16e03042093437f8
+/*
+void DisplayFormat(LOCATION lo, POINT* se, char* uf){
     int8_t i;
 
     printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
@@ -125,7 +121,21 @@ void DisplaySetting(LOCATION lo, POINT* se){
     printf("アップロードファイル名: %s\n", uf);
     return;
 }
-<<<<<<< HEAD
+*/
+void DisplaySetting(LOCATION lo, POINT* se){
+    int8_t i;
+
+    printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
+
+    printf("センサーID,センサー名称,測定単位\n");
+    printf("-------------------------------------\n");
+    for(i = 0; i < lo.num; i++){
+        printf("%hhd,%s,%s\n", se[i].id, se[i].name, se[i].unit); 
+    }
+    putchar('\n');
+//    printf("アップロードファイル名: %s\n", uf);
+    return;
+}
 
 /** Display "config" file on screen.
  *  f:   configFile
@@ -175,7 +185,7 @@ void DisplayConfig(char *f)
         }
     }
     fclose(fp);
-    DisplayFormat(lo, se, uf);
+    DisplaySetting(lo, se);
     putchar('\n');
     return;
 }
@@ -216,7 +226,7 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
             sensor[i].id = i + 1;
         }
 
-        DisplayFormat(place, sensor, uf);
+        DisplaySetting(place, sensor);
         putchar('\n');
         
         printf("確認OKの場合は\"y\",\n変更する場合は\"n\"を入力してください.\n");     
@@ -269,7 +279,7 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
     
     return f;
 }
-
+/*
 char* ReadJsonFile(char* f, char* str)
 {
     char line[512];
@@ -306,5 +316,4 @@ char* ReadJsonFile(char* f, char* str)
     return str;
 
 }
-=======
->>>>>>> 1c170112868f9554a71e7d1a16e03042093437f8
+*/

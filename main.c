@@ -23,16 +23,14 @@ int main(int argc, char *argv[]){
     /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
     static char uploadFile[FILE_NAME_SIZE];
     static char configFile[FILE_NAME_SIZE];
-<<<<<<< HEAD
-    static char setFile[] = "setup.json";
-=======
+
+//    static char setFile[] = "setup.json";
     static char logFile[FILE_NAME_SIZE];
     char readLine[LINE_SIZE];
     char logMessage[256];
->>>>>>> 1c170112868f9554a71e7d1a16e03042093437f8
     unsigned char deviceMarking[32];
     //char line[512];
-    char json_str[1024];
+//    char json_str[1024];
     
     struct tm *local;
     LOCATION Site;
@@ -54,12 +52,10 @@ int main(int argc, char *argv[]){
     strcpy(logFile, SetLogFile(logFile));
 //    printf("main #48_log file is %s\n", logFile);
 
-    printf("main_#47 read json file\n\n");
-    ReadJsonFile(setFile, json_str);
-    printf("main_#58 str is %s\n", json_str);
-    putchar('\n');
-
-
+    //printf("main_#47 read json file\n\n");
+    //ReadJsonFile(setFile, json_str);
+    //printf("main_#58 str is %s\n", json_str);
+    //putchar('\n');
 
     FILE *fp; //FILE structure.
     fp = fopen(configFile, "r");
@@ -118,7 +114,7 @@ int main(int argc, char *argv[]){
     }
     fclose(fp);
 
-    LoadConfigSettings(configFile, Site, Sensor, uploadFile);
+//    LoadConfigSettings(configFile, Site, Sensor, uploadFile);
     
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
