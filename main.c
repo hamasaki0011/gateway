@@ -108,7 +108,9 @@ int main(int argc, char *argv[]){
     /// Load config file.
     LoadConfigSettings(configFile, Site, Sensor, uploadFile);
     // DisplayConfig(configFile);
-    printf("main_#111 configFile is %s\nand Site name is %s", configFile, Site.name);
+    printf("main_#111 configFile is %s\nand Site name is %s\n", configFile, Site.name);
+    
+    fclose(fp);
 
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){

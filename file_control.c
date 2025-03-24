@@ -265,7 +265,7 @@ void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
 
         }
     }
-    fclose(f);
+    
 }
 
 
