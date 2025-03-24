@@ -17,7 +17,7 @@ char* GetConfig(char*);
 void LoadConfigSettings(char*, LOCATION, POINT*, char*);
 char* SetUploadFile(char*);
 char* SetLogFile(char*);
-int8_t Logging(char*, char*);
+int8_t Logging(char*, char*, char*);
 void DisplayUploadFormat(LOCATION, POINT*, char*);
 void DisplayConfig(char*);
 char* BuildConfig(char*, LOCATION, POINT*, char*);

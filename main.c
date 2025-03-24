@@ -189,7 +189,10 @@ int main(int argc, char *argv[]){
                 
                 printf("%s\n", Site.name);
                 for(i = 0; i < Site.num; i++){
-                    printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                    char var[128];
+                    sprintf(var, "%s: %.1f %s\n", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                    printf("%s", var);
+                    Logging(logFile, var, now);
                 }
                 putchar('\n');
                 

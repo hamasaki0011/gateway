@@ -51,9 +51,10 @@ char* SetLogFile(char* logFile){
     return logFile;
 }
 
-int8_t Logging(char* log, char* msg)
+int8_t Logging(char* log, char* msg, char* timeStamp)
 {
     int8_t res = 0;
+    
     FILE *fl; //FILE structure.
     fl = fopen(log, "a");
     if(fl == NULL){    
@@ -62,7 +63,7 @@ int8_t Logging(char* log, char* msg)
         return res;
     }
     
-    fprintf(fl, "%s", msg);
+    fprintf(fl, "%s: %s", timeStamp, msg);
     fclose(fl);
     printf("file_control #66 close log and res is %d\n", res);
     return res;
