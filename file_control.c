@@ -54,7 +54,7 @@ char* SetLogFile(char* logFile){
 int8_t Logging(char* log, char* msg, char* timeStamp)
 {
     int8_t res = 0;
-    
+
     FILE *fl; //FILE structure.
     fl = fopen(log, "a");
     if(fl == NULL){    
@@ -268,23 +268,6 @@ void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
     fclose(f);
 }
 
-
-/*
-char* SetUploadFile(char* uploadFile){
-
-    DIR *dir = opendir(UPLOAD_PATH);
-    
-    if (!dir){
-        if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
-            perror("ワークフォルダーの作成に失敗しました.\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    strcat(strcat(uploadFile, UPLOAD_PATH),UPLOAD_FILE);
-
-    return uploadFile;
-}
-*/
 
 /*
 char* ReadJsonFile(char* f, char* str)

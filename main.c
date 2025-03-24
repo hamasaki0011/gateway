@@ -124,7 +124,7 @@ int main(int argc, char *argv[]){
     }
 
     /// Opening message.
-    strcpy(logMessage, "センサーの読み取りを開始します.\n");
+    // strcpy(logMessage, "センサーの読み取りを開始します.\n");
     printf("センサーのシリアルコードは %s です.\n\n", deviceMarking);
         
     if (StartContinuousMeasurement() != NO_ERROR) {
@@ -134,6 +134,7 @@ int main(int argc, char *argv[]){
     /// At the beginning, makes a dummy read once.
     usleep(500000);
     BlankRead();
+    printf("main_#137 I'm here and will start to read.");
 
     /** main loop */
     for (;;) {
