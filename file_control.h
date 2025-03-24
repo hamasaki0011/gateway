@@ -14,14 +14,15 @@
 #define LOG_FILE		"sensing.log"     // Log file
 
 char* GetConfig(char*);
-//void LoadConfigSettings(char*, LOCATION, POINT*, char*);
+void LoadConfigSettings(char*, LOCATION, POINT*, char*);
 char* SetUploadFile(char*);
 char* SetLogFile(char*);
 int8_t Logging(char*, char*);
-void DisplaySetting(LOCATION, POINT*);
-//void DisplayFormat(LOCATION, POINT*, char*);
-//void DisplayConfig(char*);
-//char* BuildConfig(char*, LOCATION, POINT*, char*);
+void DisplayUploadFormat(LOCATION, POINT*, char*);
+void DisplayConfig(char*);
+char* BuildConfig(char*, LOCATION, POINT*, char*);
+char* GetTimeStamp();
+
 //char* ReadJsonFile(char*, char*);
 
 #endif /* MAIN_H */

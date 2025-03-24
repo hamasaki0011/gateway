@@ -4,7 +4,7 @@
 #include <unistd.h>     // sleep()/usleep(), close(), open(), read(), write()
 #include <dirent.h>     // For directory operation.
 #include <sys/stat.h>   // mkdir()
-//#include <stdbool.h>    // For bool operation, true and false.
+#include <stdbool.h>    // For bool operation, true and false.
 #include "file_control.h"
 #include "main.h"
 
@@ -51,96 +51,25 @@ char* SetLogFile(char* logFile){
     return logFile;
 }
 
-int8_t Logging(char* log, char* logMessage)
+int8_t Logging(char* log, char* msg)
 {
     int8_t res = 0;
-    FILE *fw; //FILE structure.
+    FILE *fl; //FILE structure.
+    fl = fopen(log, "a");
+    if(fl == NULL){    
+        res = -1;
+        printf("file_control #60 Could Not open log file and res is%d\n", res);
+        return res;
+    }
     
-    fw = fopen(log, "w");
-    printf("%s", logMessage);
-    
-    fclose(fw);
-    printf("file_control #60 close log and res is %d\n", res);
+    fprintf(fl, "%s", msg);
+    fclose(fl);
+    printf("file_control #66 close log and res is %d\n", res);
     return res;
 }
 
-void DisplaySetting(LOCATION lo, POINT* se){
-    int8_t i;
-
-    printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
-
-    printf("センサーID,センサー名称,測定単位\n");
-    printf("-------------------------------------\n");
-    for(i = 0; i < lo.num; i++){
-        printf("%hhd,%s,%s\n", se[i].id, se[i].name, se[i].unit); 
-    }
-    putchar('\n');
-    return;
-}
-
-/*
-void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
-{
-    char readLine[LINE_SIZE];
-
-    FILE *f; //FILE structure.
-    f = fopen(file, "r");
-
-    /// Load config file.
-    while(fgets(readLine, LINE_SIZE, f) != NULL){
-        static int8_t id = 0;
-        char *ptr;
-
-        ptr = strtok(readLine, ",");     // First
-        if(strcmp(ptr, "location") == 0){
-            ptr = strtok(NULL, ",");    // Site.name
-            strcpy(s.name, ptr);
-
-            ptr = strtok(NULL, ",");    // Number
-            s.num = atoi(ptr);            
-        }else if(strcmp(ptr, "point") == 0){
-            ptr = strtok(NULL, ",");    // Sensor ID
-            p[id].id = atoi(ptr);             
-
-            ptr = strtok(NULL, ",");    // Sensor NAME
-            strcpy(p[id].name, ptr);
-
-            ptr = strtok(NULL, ",");    // Sensor UNIT
-            strcpy(p[id].unit, ptr);
-
-            id++;
-            
-        }else{
-            ptr = strtok(NULL, ",");    // upload file name
-            strcpy(u_file, ptr);
-
-        }
-    }
-    fclose(f);
-
-}
-*/
-
-/*
-char* SetUploadFile(char* uploadFile){
-
-    DIR *dir = opendir(UPLOAD_PATH);
-    
-    if (!dir){
-        if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
-            perror("ワークフォルダーの作成に失敗しました.\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    strcat(strcat(uploadFile, UPLOAD_PATH),UPLOAD_FILE);
-
-    return uploadFile;
-}
-
-*/
-
-/*
-void DisplayFormat(LOCATION lo, POINT* se, char* uf){
+/** Display the upload format */
+void DisplayUploadFormat(LOCATION lo, POINT* se, char* uf){
     int8_t i;
 
     printf("測定サイト: \"%s\" (測定ポイント数 %d)\n\n", lo.name, lo.num);
@@ -154,69 +83,10 @@ void DisplayFormat(LOCATION lo, POINT* se, char* uf){
     printf("アップロードファイル名: %s\n", uf);
     return;
 }
-*/
-
-/** Display "config" file on screen.
- *  f:   configFile
- *  return value: None. */
-
-/*
-void DisplayConfig(char *f)
-{
-    char readLine[LINE_SIZE];
-    // int8_t i;
-    LOCATION lo;
-    POINT se[16];
-    char uf[256];
-
-    printf("\"%s\"の設定は ... \n", f);
-    FILE *fp = fopen(f,"r");
-    if (fp == NULL){
-        perror("設定ファイルを開けません.\n");
-        exit(EXIT_FAILURE);
-    }
-    /// Read config file.
-    while(fgets(readLine, LINE_SIZE, fp) != NULL){
-        static int8_t id = 0;
-        char *ptr;
-
-        ptr = strtok(readLine, ",");     // First
-        if(strcmp(ptr, "location") == 0){
-            ptr = strtok(NULL, ",");    // Site.name
-            strcpy(lo.name, ptr);
-
-            ptr = strtok(NULL, ",");    // Number
-            lo.num = atoi(ptr);
-
-        }else if(strcmp(ptr, "point") == 0){
-            ptr = strtok(NULL, ",");    // Sensor ID
-            se[id].id = atoi(ptr);             
-
-            ptr = strtok(NULL, ",");    // Sensor NAME
-            strcpy(se[id].name, ptr);
-
-            ptr = strtok(NULL, ",");    // Sensor UNIT
-            strcpy(se[id].unit, ptr);
-
-            id++;
-
-        }else{
-            ptr = strtok(NULL, ",");    // file name
-            strcpy(uf, ptr);
-        }
-    }
-    fclose(fp);
-    DisplaySetting(lo, se);
-    putchar('\n');
-    return;
-}
- */
 
 /** Build "config" file.
  *  path:   currentPath
  *  return value: Not 0 means exist, 0 means Not exist. */
-
-/*
 char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
 {
     char ans[2];
@@ -250,7 +120,7 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
             sensor[i].id = i + 1;
         }
 
-        DisplaySetting(place, sensor);
+        DisplayUploadFormat(place, sensor, uf);
         putchar('\n');
         
         printf("確認OKの場合は\"y\",\n変更する場合は\"n\"を入力してください.\n");     
@@ -302,6 +172,116 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
     fclose(fs);
     
     return f;
+}
+
+/** Display "config" file on screen.
+ *  f:   configFile
+ *  return value: None. */
+void DisplayConfig(char *f)
+{
+    char readLine[LINE_SIZE];
+    // int8_t i;
+    LOCATION lo;
+    POINT se[16];
+    char uf[256];
+
+    printf("\"%s\"の設定は ... \n", f);
+    FILE *fp = fopen(f,"r");
+    if (fp == NULL){
+        perror("設定ファイルを開けません.\n");
+        exit(EXIT_FAILURE);
+    }
+    /// Read config file.
+    while(fgets(readLine, LINE_SIZE, fp) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(readLine, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(lo.name, ptr);
+
+            ptr = strtok(NULL, ",");    // Number
+            lo.num = atoi(ptr);
+
+        }else if(strcmp(ptr, "point") == 0){
+            ptr = strtok(NULL, ",");    // Sensor ID
+            se[id].id = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(se[id].name, ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(se[id].unit, ptr);
+
+            id++;
+
+        }else{
+            ptr = strtok(NULL, ",");    // file name
+            strcpy(uf, ptr);
+        }
+    }
+    fclose(fp);
+    DisplayUploadFormat(lo, se, uf);
+    putchar('\n');
+    return;
+}
+
+void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
+{
+    char readLine[LINE_SIZE];
+
+    FILE *f; //FILE structure.
+    f = fopen(file, "r");
+
+    /// Load config file.
+    while(fgets(readLine, LINE_SIZE, f) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(readLine, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(s.name, ptr);
+
+            ptr = strtok(NULL, ",");    // Number
+            s.num = atoi(ptr);            
+        }else if(strcmp(ptr, "point") == 0){
+            ptr = strtok(NULL, ",");    // Sensor ID
+            p[id].id = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(p[id].name, ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(p[id].unit, ptr);
+
+            id++;
+            
+        }else{
+            ptr = strtok(NULL, ",");    // upload file name
+            strcpy(u_file, ptr);
+
+        }
+    }
+    fclose(f);
+}
+
+
+/*
+char* SetUploadFile(char* uploadFile){
+
+    DIR *dir = opendir(UPLOAD_PATH);
+    
+    if (!dir){
+        if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
+            perror("ワークフォルダーの作成に失敗しました.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    strcat(strcat(uploadFile, UPLOAD_PATH),UPLOAD_FILE);
+
+    return uploadFile;
 }
 */
 

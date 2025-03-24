@@ -5,7 +5,6 @@
 #include <time.h>       // time()
 #include <stdbool.h>    // For bool operation, true and false.
 // fail~ #include <json/json.h>
-
 #include "common.h"
 #include "device.h"
 #include "file_control.h"
@@ -26,18 +25,18 @@ int main(int argc, char *argv[]){
     static char uploadFile[FILE_NAME_SIZE];
     static char configFile[FILE_NAME_SIZE];
     static char logFile[FILE_NAME_SIZE];
-    char readLine[LINE_SIZE];
+    // char readLine[LINE_SIZE];
     char logMessage[256];
     unsigned char deviceMarking[32];
 //    static char setFile[] = "setup.json";
     //    char json_str[1024];
     
     struct tm *local;
-    LOCATION Site;
+    LOCATION Site;  // and its configuration.
     /// Site_id:    Site.id 
     /// Site_nam    Site.name
     /// Site_num:   Site.num:
-    POINT Sensor[16];   // Sensor's information whish is located at the monitor site.
+    POINT Sensor[16];   // Sensor's information locating at the monitor site.
     /// Sensor_id:    Sensor[id].id 
     /// Sensor_name:  Sensor[id].name
     /// Sensor_unit:  Sensor[id].unit
@@ -50,7 +49,6 @@ int main(int argc, char *argv[]){
     
     /// Set logFile.
     strcpy(logFile, SetLogFile(logFile));
-    printf("main #48_log file is %s\n", logFile);
     //printf("main_#47 read json file\n\n");
     //ReadJsonFile(setFile, json_str);
     //printf("main_#58 str is %s\n", json_str);
@@ -61,9 +59,11 @@ int main(int argc, char *argv[]){
     /// Normal operation.
     if(argc <= 1){
         char ans[2];
+        char logMessage[128];
 
         if (fp == NULL){
-            printf("設定ファイルがありません.\n作成しますか？\n");
+            strcpy(logMessage, "設定ファイルがありません.\n");
+            
             printf("作成する場合は ... \"y\"を\n中止する場合は(プログラムを終了します.) ... \"n\"を入力してください.\n");
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
@@ -107,68 +107,14 @@ int main(int argc, char *argv[]){
     }
 
     /// Load config file.
-    while(fgets(readLine, LINE_SIZE, fp) != NULL){
-        static int8_t id = 0;
-        char *ptr;
-    
-        ptr = strtok(readLine, ",");     // First
-        if(strcmp(ptr, "location") == 0){
-            ptr = strtok(NULL, ",");    // Site.name
-            strcpy(Site.name, ptr);
-    
-            ptr = strtok(NULL, ",");    // Number
-            Site.num = atoi(ptr);            
-        }else{
-            ptr = strtok(NULL, ",");    // Sensor ID
-            Sensor[id].id = atoi(ptr);             
-    
-            ptr = strtok(NULL, ",");    // Sensor NAME
-            strcpy(Sensor[id].name, ptr);
-    
-            ptr = strtok(NULL, ",");    // Sensor UNIT
-            strcpy(Sensor[id].unit, ptr);
-    
-            id++;
-        }
-    }
-
-    /*
-    /// Load config file.
-//    LoadConfigSettings(configFile, Site, Sensor, uploadFile);    while(fgets(readLine, LINE_SIZE, fp) != NULL){
-        static int8_t id = 0;
-        char *ptr;
-
-        ptr = strtok(readLine, ",");     // First
-        if(strcmp(ptr, "location") == 0){
-            ptr = strtok(NULL, ",");    // Site.name
-            strcpy(Site.name, ptr);
-
-            ptr = strtok(NULL, ",");    // Number
-            Site.num = atoi(ptr);            
-        }else{
-            ptr = strtok(NULL, ",");    // Sensor ID
-            Sensor[id].id = atoi(ptr);             
-
-            ptr = strtok(NULL, ",");    // Sensor NAME
-            strcpy(Sensor[id].name, ptr);
-
-            ptr = strtok(NULL, ",");    // Sensor UNIT
-            strcpy(Sensor[id].unit, ptr);
-
-            id++;
-        }
-    }    
-    */
-    fclose(fp);
+    LoadConfigSettings(configFile, Site, Sensor, uploadFile);
+    DisplayConfig(configFile);
 
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
-        Logging(logFile, "センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
         exit(EXIT_FAILURE);
     }
-    
-    Logging(logFile, "センサーデバイスの初期化\n");
     
     /// Obtain the device marking.
     if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
@@ -176,7 +122,7 @@ int main(int argc, char *argv[]){
         perror(logMessage);
         exit(EXIT_FAILURE);
     }
-    logMessage[0] = '\0';
+
     /// Opening message.
     strcpy(logMessage, "センサーの読み取りを開始します.\n");
     printf("センサーのシリアルコードは %s です.\n\n", deviceMarking);
@@ -196,11 +142,11 @@ int main(int argc, char *argv[]){
         int year, month, day, hour, minute, second;
         char dateNow[32], timeNow[16], now[48];
 
-        /** Case 0: Using a data logger connecting one or many sensors,
-         * and it is connected to a lap-top computer via serial communication interface. */
-
-        /** Case 1: Using a sensirion sensor and it embedded temperature and humidity sensor in it,
-         * and it is connected with Raspberry Pi via I2C interface.  */
+        /**
+        *  Case 0: Using a data logger connecting one or many sensors,
+        *  and it is connected to a lap-top computer via serial communication interface.
+        *  Case 1: Using a sensirion sensor and it embedded temperature and humidity sensor in it,
+        *  and it is connected with Raspberry Pi via I2C interface.  */
         // SDATA Result = {
         //     Sensor[0].name, Sensor[1].name, Sensor[2].name, 
         //     Sensor[0].data, Sensor[1].data, Sensor[2].data
@@ -275,7 +221,6 @@ int main(int argc, char *argv[]){
                 // printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
                 // printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
                 // printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
-            
             }
 
             if(second == 0 && flgRec == 0){
@@ -283,7 +228,6 @@ int main(int argc, char *argv[]){
                 int8_t i;
 
                 FILE *fp = fopen(uploadFile,"w");
-                
                 if (fp == NULL){
                     perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
                     return -1;
@@ -300,7 +244,6 @@ int main(int argc, char *argv[]){
 
                 fclose(fp);
                 printf("Saved into \"%s\"\n\n", uploadFile);
-
             }
         }else{
             flgDisp = 0;
@@ -314,11 +257,9 @@ int main(int argc, char *argv[]){
     
     // To finish this application
     // What should we do at the next time to start application.
-
     // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
     // sens_error = sfa3x_stop_measurement();
     // printf("センサーを停止します。\n");
-
     // Exit from this application program
     return 0;
 }
