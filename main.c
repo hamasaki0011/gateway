@@ -134,7 +134,6 @@ int main(int argc, char *argv[]){
     /// At the beginning, makes a dummy read once.
     usleep(500000);
     BlankRead();
-    printf("main_#137 I'm here and will start to read.");
 
     /** main loop */
     for (;;) {
@@ -177,17 +176,19 @@ int main(int argc, char *argv[]){
                 /// Display current time' information on console.
                 printf("%s @%s\n", dateNow, timeNow);
                 
+                printf("main_#179 I'm here");
                 /// Read Sensirion sensor' data and display on the screen.
                 if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
                     for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
                     printf("Failed to read Sensor data.\n");
 
                 }else{
+                    printf("main_#186 And I'm here");
                     Sensor[0].data = data1;
                     Sensor[1].data = data2;
                     Sensor[2].data = data3;
                 }
-                
+                printf("main_#191 Finally I'm here");
                 printf("%s\n", Site.name);
                 for(i = 0; i < Site.num; i++){
                     printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
