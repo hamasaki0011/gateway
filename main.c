@@ -144,7 +144,7 @@ int main(int argc, char *argv[]){
             id++;
             
         }else{
-            ptr = strtok(NULL, ",");    // upload file name
+            ptr = strtok(NULL, ",\n");    // upload file name
             strcpy(fileName, ptr);
 
         }
