@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
         if(strcmp(ptr, "location") == 0){
             ptr = strtok(NULL, ",");    // Site.name
             strcpy(Site.name, ptr);
-            ptr = strtok(NULL, ",");    // Number
+            ptr = strtok(NULL, ",\n");    // Number
             Site.num = atoi(ptr);            
         }else if(strcmp(ptr, "point") == 0){
             ptr = strtok(NULL, ",");    // Sensor ID
@@ -138,9 +138,8 @@ int main(int argc, char *argv[]){
             ptr = strtok(NULL, ",");    // Sensor NAME
             strcpy(Sensor[id].name, ptr);
 
-            ptr = strtok(NULL, ",");    // Sensor UNIT
+            ptr = strtok(NULL, ",\n");    // Sensor UNIT
             strcpy(Sensor[id].unit, ptr);
-
             id++;
             
         }else{
@@ -153,7 +152,6 @@ int main(int argc, char *argv[]){
     fclose(fp);
     /// Set uploadFile.
     strcpy(uploadFile, SetUploadFile(uploadFile, fileName));
-    printf("main_#148 file name is %s\n", uploadFile);
 
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
@@ -268,32 +266,26 @@ int main(int argc, char *argv[]){
 
             if(second == 0 && flgRec == 0){
                 flgRec = 1;
+
+                CreateUploadFile(uploadFile, Site, Sensor, now);
+                /*
                 int8_t i;
                 FILE *fu;
-                printf("main_#273 upload file is %s\n", uploadFile);
                 fu = fopen(uploadFile,"w");
                 if (fu == NULL){
                     fclose(fu);
                     perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
                     return -1;
                 }
-
-                printf("main_#270 I'll make an upload file\n");
-                printf("main_#271 Sensor[0].name is %s\n", Sensor[0].name);
-                
                 /// Record header.
                 fprintf(fu, "measured_date,measured_value,sensor,place\n");
-                printf("measured_date,measured_value,sensor,place\n");
                 for(i = 0; i < Site.num; i++){
                     fprintf(fu, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
-                    printf("%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
                 }
-                // fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
-                // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
-                // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
-
                 fclose(fu);
-                printf("Saved into \"%s\"\n\n", uploadFile);
+                printf("\"%s\" saved\n\n", uploadFile);
+                */
+
             }
         }else{
             flgDisp = 0;

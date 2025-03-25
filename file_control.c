@@ -23,7 +23,7 @@ char* GetConfig(char* file){
 
 char* SetUploadFile(char* uploadFile, char* fileName){
     DIR *dir = opendir(UPLOAD_PATH);
-    
+
     if (!dir){
         if(mkdir(UPLOAD_PATH, 0755)){   /// Make work folder.
             perror("ワークフォルダーの作成に失敗しました.\n");
@@ -225,6 +225,28 @@ void DisplayConfig(char *f)
     DisplayUploadFormat(lo, se, uf);
     putchar('\n');
     return;
+}
+
+int8_t CreateUploadFile(char* uploadFile, LOCATION Site, POINT* Sensor, char* now)
+{
+    uint8_t i;
+    FILE *f;
+
+    f = fopen(uploadFile,"w");
+    if (f == NULL){
+        fclose(f);
+        perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
+        return -1;
+    }
+    /// Record header.
+    fprintf(f, "measured_date,measured_value,sensor,place\n");
+    for(i = 0; i < Site.num; i++){
+        fprintf(f, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
+    }
+    fclose(f);
+    printf("\"%s\" saved\n\n", uploadFile);
+    
+    return 0;
 }
 
 /*
