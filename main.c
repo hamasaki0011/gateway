@@ -210,10 +210,7 @@ int main(int argc, char *argv[]){
 
                 /// Display measured data on screen.
                 flgDisp = 1;
-                // FILE *fp = fopen(uploadFile,"w");
-                /// Display current time' information on console.
                 printf("%s @%s\n", dateNow, timeNow);
-                
                 /// Read Sensirion sensor' data and display on the screen.
                 if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
                     for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
@@ -224,16 +221,11 @@ int main(int argc, char *argv[]){
                     Sensor[1].data = data2;
                     Sensor[2].data = data3;
                 }
-                printf("%s\n", Site.name);
+                printf("観測サイト: %s\n", Site.name);
                 for(i = 0; i < Site.num; i++){
-                    // char var[128];
-
                     printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                    // sprintf(var, "%s: %.1f %s\n", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                    // printf("%s", var);
                 }
                 putchar('\n');
-                // fclose(fp);
                 
                 /// [MEMO] For Sensirion's sensor
                 // Result = ReadMeasure(Result);
@@ -275,6 +267,9 @@ int main(int argc, char *argv[]){
                     return -1;
                 }
 
+                printf("main_#270 I'll make an upload file");
+                printf("main_#271 Sensor[0].name is %s\n", Sensor[0].name);
+                
                 /// Record header.
                 fprintf(fp, "measured_date,measured_value,sensor,place\n");
                 for(i = 0; i < Site.num; i++){
