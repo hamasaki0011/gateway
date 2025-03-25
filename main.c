@@ -233,6 +233,7 @@ int main(int argc, char *argv[]){
                     printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
                 }
                 putchar('\n');
+                putchar('\n');
                 
                 /// [MEMO] For Sensirion's sensor
                 // Result = ReadMeasure(Result);
@@ -266,26 +267,7 @@ int main(int argc, char *argv[]){
 
             if(second == 0 && flgRec == 0){
                 flgRec = 1;
-
                 CreateUploadFile(uploadFile, Site, Sensor, now);
-                /*
-                int8_t i;
-                FILE *fu;
-                fu = fopen(uploadFile,"w");
-                if (fu == NULL){
-                    fclose(fu);
-                    perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
-                    return -1;
-                }
-                /// Record header.
-                fprintf(fu, "measured_date,measured_value,sensor,place\n");
-                for(i = 0; i < Site.num; i++){
-                    fprintf(fu, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
-                }
-                fclose(fu);
-                printf("\"%s\" saved\n\n", uploadFile);
-                */
-
             }
         }else{
             flgDisp = 0;
