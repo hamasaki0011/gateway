@@ -76,7 +76,8 @@ int main(int argc, char *argv[]){
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
                 if(strcmp(ans, "y") == 0){
-                    fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
+                    BuildConfig(configFile, Site, Sensor, uploadFile);
+                    // fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
                     break;
 
                 }
@@ -84,7 +85,6 @@ int main(int argc, char *argv[]){
                     /* ［要検討］作成しない場合の対処 */
                     printf("プログラムを終了します.\n");
                     return -1;
-
                 }
             }
         }
@@ -96,7 +96,8 @@ int main(int argc, char *argv[]){
         if (fp == NULL){
             fclose(fp);
             printf("設定ファイルを作成します.\n");
-            fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
+            BuildConfig(configFile, Site, Sensor, uploadFile);
+            // fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
         }else{
             printf("設定ファイルが既に存在します.\n");
             DisplayConfig(configFile);
@@ -105,10 +106,12 @@ int main(int argc, char *argv[]){
                 scanf("%s", ans);        
                 if(strcmp(ans, "y") == 0){
                     fclose(fp);
-                    fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
+                    BuildConfig(configFile, Site, Sensor, uploadFile);
+                    // fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
                     break;
 
                 }else if(strcmp(ans, "n") == 0){
+                    fclose(fp);
                     break;
 
                 } 
@@ -117,6 +120,7 @@ int main(int argc, char *argv[]){
     }
 
     /// Load config file.
+    fp = fopen(configFile, "r");
     while(fgets(readLine, LINE_SIZE, fp) != NULL){
         static int8_t id = 0;
         char *ptr;
@@ -266,8 +270,9 @@ int main(int argc, char *argv[]){
                 flgRec = 1;
                 int8_t i;
 
-                FILE *fp = fopen(uploadFile,"w");
-                if (fp == NULL){
+                FILE *fu = fopen(uploadFile,"w");
+                if (fu == NULL){
+                    fclose(fu);
                     perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
                     return -1;
                 }
@@ -276,15 +281,15 @@ int main(int argc, char *argv[]){
                 printf("main_#271 Sensor[0].name is %s\n", Sensor[0].name);
                 
                 /// Record header.
-                fprintf(fp, "measured_date,measured_value,sensor,place\n");
+                fprintf(fu, "measured_date,measured_value,sensor,place\n");
                 for(i = 0; i < Site.num; i++){
-                    fprintf(fp, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
+                    fprintf(fu, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
                 }
                 // fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
                 // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
                 // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.temperature, Result.temp, Site.name);        
 
-                fclose(fp);
+                fclose(fu);
                 printf("Saved into \"%s\"\n\n", uploadFile);
             }
         }else{
