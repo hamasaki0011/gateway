@@ -269,16 +269,16 @@ int main(int argc, char *argv[]){
             if(second == 0 && flgRec == 0){
                 flgRec = 1;
                 int8_t i;
-
+                FILE *fu;
                 printf("main_#273 upload file is %s\n", uploadFile);
-                FILE *fu = fopen(uploadFile,"w");
+                fu = fopen(uploadFile,"w");
                 if (fu == NULL){
                     fclose(fu);
                     perror("ファイルにアクセスすることができません... プログラムを終了します.\n");
                     return -1;
                 }
 
-                printf("main_#270 I'll make an upload file");
+                printf("main_#270 I'll make an upload file\n");
                 printf("main_#271 Sensor[0].name is %s\n", Sensor[0].name);
                 
                 /// Record header.
