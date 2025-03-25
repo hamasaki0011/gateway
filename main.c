@@ -205,11 +205,12 @@ int main(int argc, char *argv[]){
 
         if(second % 5 == 0){
             if(flgDisp == 0){
-                flgDisp = 1;
                 float data1, data2, data3;
                 int8_t i;
 
-                FILE *fp = fopen(uploadFile,"a");
+                /// Display measured data on screen.
+                flgDisp = 1;
+                // FILE *fp = fopen(uploadFile,"w");
                 /// Display current time' information on console.
                 printf("%s @%s\n", dateNow, timeNow);
                 
@@ -225,14 +226,14 @@ int main(int argc, char *argv[]){
                 }
                 printf("%s\n", Site.name);
                 for(i = 0; i < Site.num; i++){
-                    char var[128];
+                    // char var[128];
 
-                    // printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                    sprintf(var, "%s: %.1f %s\n", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                    printf("%s", var);
+                    printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                    // sprintf(var, "%s: %.1f %s\n", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                    // printf("%s", var);
                 }
                 putchar('\n');
-                fclose(fp);
+                // fclose(fp);
                 
                 /// [MEMO] For Sensirion's sensor
                 // Result = ReadMeasure(Result);
