@@ -235,6 +235,8 @@ void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
     FILE *f; //FILE structure.
     f = fopen(file, "r");
 
+    printf("LoadConfigSetting_#238 I'm in the function, LoadConfigSettings()\n");
+    printf("LoadConfigSetting_#239 s.name is %s\n", s.name);
     /// Load config file.
     while(fgets(readLine, LINE_SIZE, f) != NULL){
         static int8_t id = 0;
@@ -244,6 +246,7 @@ void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
         if(strcmp(ptr, "location") == 0){
             ptr = strtok(NULL, ",");    // Site.name
             strcpy(s.name, ptr);
+            printf("LoadConfigSetting_#249 s.name is %s\n",s.name);
 
             ptr = strtok(NULL, ",");    // Number
             s.num = atoi(ptr);            
@@ -265,7 +268,6 @@ void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
 
         }
     }
-    
 }
 
 

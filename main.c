@@ -20,12 +20,21 @@
 #define FAILED_GET_DEVICEMARK   20
 #define FAILED_START_SENSOR     30
 
+    LOCATION Site;  // and its configuration.
+    /// Site_id:    Site.id 
+    /// Site_nam    Site.name
+    /// Site_num:   Site.num:
+    POINT Sensor[16];   // Sensor's information locating at the monitor site.
+    /// Sensor_id:    Sensor[id].id 
+    /// Sensor_name:  Sensor[id].name
+    /// Sensor_unit:  Sensor[id].unit
+
 int main(int argc, char *argv[]){
     /// Define DIR_PATH "/home/pi/works/upload_file" and work file name is testWork.csv
     static char uploadFile[FILE_NAME_SIZE];
     static char configFile[FILE_NAME_SIZE];
     static char logFile[FILE_NAME_SIZE];
-    // char readLine[LINE_SIZE];
+    static char readLine[LINE_SIZE];
     char logMessage[256];
     unsigned char deviceMarking[32];
 //    static char setFile[] = "setup.json";
@@ -106,9 +115,43 @@ int main(int argc, char *argv[]){
     }
 
     /// Load config file.
-    LoadConfigSettings(configFile, Site, Sensor, uploadFile);
+    // LoadConfigSettings(configFile, Site, Sensor, uploadFile);
+    // char readLine[LINE_SIZE];
+
+    // FILE *fc; //FILE structure.
+    // fc = fopen(configFile, "r");
+    printf("LoadConfigSetting_#239 s.name is %s\n", Site.name);
+    /// Load config file.
+    while(fgets(readLine, LINE_SIZE, fp) != NULL){
+        static int8_t id = 0;
+        char *ptr;
+
+        ptr = strtok(readLine, ",");     // First
+        if(strcmp(ptr, "location") == 0){
+            ptr = strtok(NULL, ",");    // Site.name
+            strcpy(Site.name, ptr);
+            ptr = strtok(NULL, ",");    // Number
+            Site.num = atoi(ptr);            
+        }else if(strcmp(ptr, "point") == 0){
+            ptr = strtok(NULL, ",");    // Sensor ID
+            Sensor[id].id = atoi(ptr);             
+
+            ptr = strtok(NULL, ",");    // Sensor NAME
+            strcpy(Sensor[id].name, ptr);
+
+            ptr = strtok(NULL, ",");    // Sensor UNIT
+            strcpy(Sensor[id].unit, ptr);
+
+            id++;
+            
+        }else{
+            ptr = strtok(NULL, ",");    // upload file name
+            strcpy(uploadFile, ptr);
+
+        }
+    }
     // DisplayConfig(configFile);
-    printf("main_#111 configFile is %s\nand Site name is %s\n", configFile, Site.name);
+    printf("main_#120 configFile is %s and Site name is %s\n", configFile, Site.name);
     
     fclose(fp);
 
