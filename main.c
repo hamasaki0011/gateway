@@ -35,6 +35,7 @@ int main(int argc, char *argv[]){
     static char configFile[FILE_NAME_SIZE];
     static char logFile[FILE_NAME_SIZE];
     static char readLine[LINE_SIZE];
+    char fileName[256];
     char logMessage[256];
     unsigned char deviceMarking[32];
 //    static char setFile[] = "setup.json";
@@ -52,9 +53,6 @@ int main(int argc, char *argv[]){
 
     /// Find current directory and Set config file' name and path.
     strcpy(configFile, GetConfig(configFile));
-
-    /// Set uploadFile.
-    strcpy(uploadFile, SetUploadFile(uploadFile));
     
     /// Set logFile.
     strcpy(logFile, SetLogFile(logFile));
@@ -139,13 +137,15 @@ int main(int argc, char *argv[]){
             
         }else{
             ptr = strtok(NULL, ",");    // upload file name
-            strcpy(uploadFile, ptr);
+            strcpy(fileName, ptr);
 
         }
     }
     // DisplayConfig(configFile);
     fclose(fp);
-
+    /// Set uploadFile.
+    strcpy(uploadFile, SetUploadFile(uploadFile, fileName));
+    
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");

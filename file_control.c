@@ -21,7 +21,7 @@ char* GetConfig(char* file){
     return file;
 }
 
-char* SetUploadFile(char* uploadFile){
+char* SetUploadFile(char* uploadFile, char* fileName){
 
     DIR *dir = opendir(UPLOAD_PATH);
     
@@ -31,7 +31,7 @@ char* SetUploadFile(char* uploadFile){
             exit(EXIT_FAILURE);
         }
     }
-    strcat(strcat(uploadFile, UPLOAD_PATH),UPLOAD_FILE);
+    strcat(strcat(uploadFile, UPLOAD_PATH), fileName);
 
     return uploadFile;
 }
