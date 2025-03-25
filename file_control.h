@@ -14,7 +14,6 @@
 #define LOG_FILE		"sensing.log"     // Log file
 
 char* GetConfig(char*);
-void LoadConfigSettings(char*, LOCATION, POINT*, char*);
 char* SetUploadFile(char*);
 char* SetLogFile(char*);
 int8_t Logging(char*, char*, char*);

@@ -115,13 +115,6 @@ int main(int argc, char *argv[]){
     }
 
     /// Load config file.
-    // LoadConfigSettings(configFile, Site, Sensor, uploadFile);
-    // char readLine[LINE_SIZE];
-
-    // FILE *fc; //FILE structure.
-    // fc = fopen(configFile, "r");
-    printf("LoadConfigSetting_#239 s.name is %s\n", Site.name);
-    /// Load config file.
     while(fgets(readLine, LINE_SIZE, fp) != NULL){
         static int8_t id = 0;
         char *ptr;
@@ -151,8 +144,6 @@ int main(int argc, char *argv[]){
         }
     }
     // DisplayConfig(configFile);
-    printf("main_#120 configFile is %s and Site name is %s\n", configFile, Site.name);
-    
     fclose(fp);
 
     /// Reset sensor board hardware.
@@ -218,6 +209,7 @@ int main(int argc, char *argv[]){
                 float data1, data2, data3;
                 int8_t i;
 
+                FILE *fp = fopen(uploadFile,"a");
                 /// Display current time' information on console.
                 printf("%s @%s\n", dateNow, timeNow);
                 
@@ -231,14 +223,16 @@ int main(int argc, char *argv[]){
                     Sensor[1].data = data2;
                     Sensor[2].data = data3;
                 }
-                printf("main_#189 %s\n", Site.name);
+                printf("%s\n", Site.name);
                 for(i = 0; i < Site.num; i++){
-                    printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                    // char var[128];
-                    // sprintf(var, "%s: %.1f %s\n", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                    // printf("%s", var);
+                    char var[128];
+
+                    // printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                    sprintf(var, "%s: %.1f %s\n", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                    printf("%s", var);
                 }
                 putchar('\n');
+                fclose(fp);
                 
                 /// [MEMO] For Sensirion's sensor
                 // Result = ReadMeasure(Result);

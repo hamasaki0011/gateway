@@ -181,7 +181,6 @@ char* BuildConfig(char *f, LOCATION place, POINT* sensor, char* uf)
 void DisplayConfig(char *f)
 {
     char readLine[LINE_SIZE];
-    // int8_t i;
     LOCATION lo;
     POINT se[16];
     char uf[256];
@@ -227,49 +226,6 @@ void DisplayConfig(char *f)
     putchar('\n');
     return;
 }
-
-void LoadConfigSettings(char* file, LOCATION s, POINT* p, char* u_file)
-{
-    char readLine[LINE_SIZE];
-
-    FILE *f; //FILE structure.
-    f = fopen(file, "r");
-
-    printf("LoadConfigSetting_#238 I'm in the function, LoadConfigSettings()\n");
-    printf("LoadConfigSetting_#239 s.name is %s\n", s.name);
-    /// Load config file.
-    while(fgets(readLine, LINE_SIZE, f) != NULL){
-        static int8_t id = 0;
-        char *ptr;
-
-        ptr = strtok(readLine, ",");     // First
-        if(strcmp(ptr, "location") == 0){
-            ptr = strtok(NULL, ",");    // Site.name
-            strcpy(s.name, ptr);
-            printf("LoadConfigSetting_#249 s.name is %s\n",s.name);
-
-            ptr = strtok(NULL, ",");    // Number
-            s.num = atoi(ptr);            
-        }else if(strcmp(ptr, "point") == 0){
-            ptr = strtok(NULL, ",");    // Sensor ID
-            p[id].id = atoi(ptr);             
-
-            ptr = strtok(NULL, ",");    // Sensor NAME
-            strcpy(p[id].name, ptr);
-
-            ptr = strtok(NULL, ",");    // Sensor UNIT
-            strcpy(p[id].unit, ptr);
-
-            id++;
-            
-        }else{
-            ptr = strtok(NULL, ",");    // upload file name
-            strcpy(u_file, ptr);
-
-        }
-    }
-}
-
 
 /*
 char* ReadJsonFile(char* f, char* str)
