@@ -62,15 +62,16 @@ int main(int argc, char *argv[]){
     //putchar('\n');
 
     FILE *fp; //FILE structure.
-    fp = fopen(configFile, "r");
+    
     /// Normal operation.
     if(argc <= 1){
         char ans[2];
         char logMessage[128];
 
+        fp = fopen(configFile, "r");
         if (fp == NULL){
+            fclose(fp);
             strcpy(logMessage, "設定ファイルがありません.\n");
-            
             printf("作成する場合は ... \"y\"を\n中止する場合は(プログラムを終了します.) ... \"n\"を入力してください.\n");
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
@@ -91,7 +92,9 @@ int main(int argc, char *argv[]){
     }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
         char ans[2];
 
+        fp = fopen(configFile, "r");
         if (fp == NULL){
+            fclose(fp);
             printf("設定ファイルを作成します.\n");
             fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
         }else{
@@ -101,6 +104,7 @@ int main(int argc, char *argv[]){
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
                 if(strcmp(ans, "y") == 0){
+                    fclose(fp);
                     fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
                     break;
 
@@ -145,7 +149,8 @@ int main(int argc, char *argv[]){
     fclose(fp);
     /// Set uploadFile.
     strcpy(uploadFile, SetUploadFile(uploadFile, fileName));
-    
+    printf("main_#148 file name is %s\n", uploadFile);
+
     /// Reset sensor board hardware.
     if (DeviceReset() != NO_ERROR){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");

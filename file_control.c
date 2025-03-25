@@ -22,7 +22,6 @@ char* GetConfig(char* file){
 }
 
 char* SetUploadFile(char* uploadFile, char* fileName){
-
     DIR *dir = opendir(UPLOAD_PATH);
     
     if (!dir){
@@ -31,6 +30,7 @@ char* SetUploadFile(char* uploadFile, char* fileName){
             exit(EXIT_FAILURE);
         }
     }
+    // uploadFile[0] = '0';
     strcat(strcat(uploadFile, UPLOAD_PATH), fileName);
 
     return uploadFile;
