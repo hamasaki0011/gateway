@@ -283,8 +283,10 @@ int main(int argc, char *argv[]){
                 
                 /// Record header.
                 fprintf(fu, "measured_date,measured_value,sensor,place\n");
+                printf("measured_date,measured_value,sensor,place\n");
                 for(i = 0; i < Site.num; i++){
                     fprintf(fu, "%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
+                    printf("%s,%0.1f,%s,%s\n", now, Sensor[i].data, Sensor[i].name, Site.name);
                 }
                 // fprintf(fp, "%s,%0.1f,%s,%s\n", now, Result.gas, Result.gasName, Site.name);
                 // fprintf(fp, "%s,%.2f,%s,%s\n", now, Result.humidity, Result.humid, Site.name);
