@@ -270,6 +270,7 @@ int main(int argc, char *argv[]){
                 flgRec = 1;
                 int8_t i;
 
+                printf("main_#273 upload file is %s\n", uploadFile);
                 FILE *fu = fopen(uploadFile,"w");
                 if (fu == NULL){
                     fclose(fu);
