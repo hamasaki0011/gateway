@@ -217,8 +217,8 @@ int main(int argc, char *argv[]){
 
                 /// Display measured data on screen.
                 flgDisp = 1;
-                printf("%s @%s\n", dateNow, timeNow);
-                /// Read Sensirion sensor' data and display on the screen.
+
+                /// Read Sensirion sensor' data.
                 if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
                     for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
                     printf("Failed to read Sensor data.\n");
@@ -228,15 +228,8 @@ int main(int argc, char *argv[]){
                     Sensor[1].data = data2;
                     Sensor[2].data = data3;
                 }
-                printf("観測サイト: %s\n", Site.name);
-                for(i = 0; i < Site.num; i++){
-                    printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                }
-                putchar('\n');
-                putchar('\n');
-                
+
                 /// [MEMO] For Sensirion's sensor
-                // Result = ReadMeasure(Result);
                 /** The structures of the Result
                  * char *gasName;       // gas name
                  * char *humid;         // humidity
@@ -244,7 +237,6 @@ int main(int argc, char *argv[]){
                  * float gas;           // gas concentration value
                  * float humidity;      // humidity value
                  * float temperature;   // temperature value */
-
                 // SDATA ReadMeasure(SDATA r){
                 //     float data1, data2, data3;
                 //     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
@@ -259,10 +251,16 @@ int main(int argc, char *argv[]){
                 //     }    
                 //     return r;
                 // }
-                // printf("%s\n", Site.name);
-                // printf("%s: %.1f %s\n", Result.gasName, Result.gas, "ppb");
-                // printf("%s: %.2f %s\n", Result.humid, Result.humidity, "\%RH");
-                // printf("%s: %.2f %s\n\n", Result.temp, Result.temperature, "°C");
+
+                /// Display read data on the screen.
+                printf("%s @%s\n", dateNow, timeNow);
+                printf("観測サイト: %s\n", Site.name);
+                for(i = 0; i < Site.num; i++){
+                    printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                }
+                putchar('\n');
+                putchar('\n');
+
             }
 
             if(second == 0 && flgRec == 0){
@@ -273,10 +271,6 @@ int main(int argc, char *argv[]){
             flgDisp = 0;
             flgRec = 0;
         }
-        // 2023.11.24 Read measured data and display on terminal
-        // 2024.11.12 #233 in tcp_com.c
-        // if (closedir(dir)) printf("Failed to close directory.\n");
-        // printf("main_#125 Close directory upload_file\n");
     }
     
     // To finish this application
