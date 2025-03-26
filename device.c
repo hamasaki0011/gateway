@@ -94,9 +94,11 @@ int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
     buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
     buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
 
-    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    if (error) {
-        return error;
+    //error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
+    //if (error) {
+    if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) {
+        // return error;
+        return I2C_WRITE_FAILED;
     }
     usleep(5000);
     error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
@@ -114,6 +116,7 @@ int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
 
     return NO_ERROR;
 }
+
 
 int8_t BlankRead(){
     float data1 = 0.0, data2 = 0.0, data3 = 0.0;
@@ -153,9 +156,12 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
     if (expected_data_length % WORD_SIZE != 0) {
         return BYTE_NUM_ERROR;
     }
-    error = i2c_hal_read(address, buffer, size);
-    if (error) {
-        return error;
+
+    // error = i2c_hal_read(address, buffer, size);
+    // if (error) {
+    if (i2c_hal_read(address, buffer, size)) {
+        // return error;
+        return I2C_READ_FAILED;
     }
 
     for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {

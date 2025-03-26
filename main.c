@@ -218,6 +218,8 @@ int main(int argc, char *argv[]){
                 /// Display measured data on screen.
                 flgDisp = 1;
 
+                // if(ReadSensor(&data1, &data2, &data3) == 0)
+
                 /// Read Sensirion sensor' data.
                 if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
                     for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
