@@ -221,7 +221,7 @@ int main(int argc, char *argv[]){
                 // if(ReadSensor(&data1, &data2, &data3) == 0)
 
                 /// Read Sensirion sensor' data.
-                if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+                if(ReadMeasuredValues(&data1, &data2, &data3) != NO_ERROR){
                     for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
                     printf("Failed to read Sensor data.\n");
 
@@ -257,11 +257,8 @@ int main(int argc, char *argv[]){
                 /// Display read data on the screen.
                 printf("%s @%s\n", dateNow, timeNow);
                 printf("観測サイト: %s\n", Site.name);
-                for(i = 0; i < Site.num; i++){
-                    printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                }
-                putchar('\n');
-                putchar('\n');
+                for(i = 0; i < Site.num; i++) printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                printf("\nWait a second.\n...\n");
 
             }
 

@@ -12,12 +12,10 @@
 
 /** Linux specific configuration. Adjust the following define to the device path of sensor. */
 #define I2C_DEVICE_PATH "/dev/i2c-1"
-#define I2C_ADDRESS 0x5D
+#define I2C_ADDRESS     0x5D
 /** The following define was taken from i2c-dev.h. Alternatively the header file
  * can be included. The define was added in Linux v3.10 and never changed since then.  */
-#define I2C_SLAVE 0x0703
-#define I2C_WRITE_FAILED -1
-#define I2C_READ_FAILED -1
+#define I2C_SLAVE       0x0703
 
 static int8_t i2c_device = -1;
 static uint8_t i2c_address = 0;
@@ -96,10 +94,8 @@ int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
 
     //error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
     //if (error) {
-    if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) {
-        // return error;
-        return I2C_WRITE_FAILED;
-    }
+    if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) return I2C_WRITE_FAILED;
+
     usleep(5000);
     error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
     if (error) {
@@ -153,16 +149,8 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
     uint16_t i, j;
     uint16_t size = (expected_data_length / WORD_SIZE) * (WORD_SIZE + CRC8_LEN);
 
-    if (expected_data_length % WORD_SIZE != 0) {
-        return BYTE_NUM_ERROR;
-    }
-
-    // error = i2c_hal_read(address, buffer, size);
-    // if (error) {
-    if (i2c_hal_read(address, buffer, size)) {
-        // return error;
-        return I2C_READ_FAILED;
-    }
+    if (expected_data_length % WORD_SIZE != 0) return BYTE_NUM_ERROR;
+    if (i2c_hal_read(address, buffer, size)) return I2C_READ_FAILED;
 
     for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
 

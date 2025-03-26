@@ -1,25 +1,26 @@
-/*
- * Copyright (c) 2024
- */
-
+/*Copyright (c) 2024 */
 #ifndef DEVICE_H
 #define DEVICE_H
 
 #include "main.h"
 #include "common.h"
 
-#define COMMAND_SIZE 2
-#define WORD_SIZE 2
-#define NUM_WORDS(x) (sizeof(x) / WORD_SIZE)
-#define MAX_BUFFER_WORDS 32
+#define COMMAND_SIZE        2
+#define WORD_SIZE           2
+#define NUM_WORDS(x)        (sizeof(x) / WORD_SIZE)
+#define MAX_BUFFER_WORDS    32
 
-#define CRC_ERROR 1
-#define I2C_BUS_ERROR 2
-#define I2C_NACK_ERROR 3
-#define BYTE_NUM_ERROR 4
-#define CRC8_POLYNOMIAL 0x31
-#define CRC8_INIT 0xFF
-#define CRC8_LEN 1
+#define NO_ERROR            0
+#define I2C_WRITE_FAILED    -1
+#define I2C_READ_FAILED     -2
+
+#define CRC_ERROR           1
+#define I2C_BUS_ERROR       2
+#define I2C_NACK_ERROR      3
+#define BYTE_NUM_ERROR      4
+#define CRC8_POLYNOMIAL     0x31
+#define CRC8_INIT           0xFF
+#define CRC8_LEN            1
 
 /** DeviceReset() - Executes a reset on the device.
  * @return 0 on success, an error code otherwise */
