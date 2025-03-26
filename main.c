@@ -159,16 +159,13 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
     
-    /// Obtain the device marking.
+    /// Obtain the device marking and opening message on screen.
     if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
         strcpy(logMessage,"センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n"); 
         perror(logMessage);
         exit(EXIT_FAILURE);
     }
-
-    /// Opening message.
-    // strcpy(logMessage, "センサーの読み取りを開始します.\n");
-    printf("センサーのシリアルコードは %s です.\n\n", deviceMarking);
+    printf("The serial No.: %s.\n\n", deviceMarking);
         
     if (StartContinuousMeasurement() != NO_ERROR) {
         perror("センサーを連続読み出しモードに設定できませんでした... プログラムを終了します.\n");
@@ -257,8 +254,11 @@ int main(int argc, char *argv[]){
                 /// Display read data on the screen.
                 printf("%s @%s\n", dateNow, timeNow);
                 printf("観測サイト: %s\n", Site.name);
-                for(i = 0; i < Site.num; i++) printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                printf("\n\n ...> Wait a second ...\n\n");
+                for(i = 0; i < Site.num; i++) {
+                    printf("%s: %.1f [%s]", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
+                    if(i < Site.num - 1) printf(", ");
+                }
+                printf("\n\n ...> wait 5 seconds ...>\n\n");
 
             }
 

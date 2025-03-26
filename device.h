@@ -22,6 +22,15 @@
 #define CRC8_INIT           0xFF
 #define CRC8_LEN            1
 
+/** Execute one write transaction on the I2C bus, sending a given number of bytes.
+ * The bytes in the supplied buffer must be sent to the given address. If
+ * the slave device does not acknowledge any of the bytes, an error shall be returned.
+ * @param address 7-bit I2C address to write to
+ * @param data    pointer to the buffer containing the data to write
+ * @param count   number of bytes to read from the buffer and send over I2C
+ * @returns 0 on success, error code otherwise */
+int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count);
+
 /** DeviceReset() - Executes a reset on the device.
  * @return 0 on success, an error code otherwise */
 int16_t DeviceReset(void);
@@ -70,15 +79,6 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
 
 /** Initialize all hardware and software components that are needed for the I2C communication. */
 void i2c_hal_init(void);
-
-/** Execute one write transaction on the I2C bus, sending a given number of bytes.
- * The bytes in the supplied buffer must be sent to the given address. If
- * the slave device does not acknowledge any of the bytes, an error shall be returned.
- * @param address 7-bit I2C address to write to
- * @param data    pointer to the buffer containing the data to write
- * @param count   number of bytes to read from the buffer and send over I2C
- * @returns 0 on success, error code otherwise */
-int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count);
 
 /** Execute one read transaction on the I2C bus, reading a given number of bytes.
  * If the device does not acknowledge the read command, an error shall be returned.

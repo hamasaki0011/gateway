@@ -20,6 +20,24 @@
 static int8_t i2c_device = -1;
 static uint8_t i2c_address = 0;
 
+/** Execute one write transaction on the I2C bus, sending a given number of bytes. 
+ * The bytes in the supplied buffer must be sent to the given address. 
+ * If the slave device does not acknowledge any of the bytes, an error shall be returned.
+ * @param address 7-bit I2C address to write to
+ * @param data    pointer to the buffer containing the data to write
+ * @param count   number of bytes to read from the buffer and send over I2C
+ * @returns 0 on success, error code otherwise. */
+int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
+    if (i2c_address != address) {
+        ioctl(i2c_device, I2C_SLAVE, address);
+        i2c_address = address;
+    }
+    if (write(i2c_device, data, count) != count) {
+        return I2C_WRITE_FAILED;
+    }
+    return 0;
+}
+
 int16_t DeviceReset(void) {
     int16_t error;
     uint8_t buffer[2];
@@ -164,24 +182,6 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
     return NO_ERROR;
 }
 
-
-/** Execute one write transaction on the I2C bus, sending a given number of bytes. 
- * The bytes in the supplied buffer must be sent to the given address. 
- * If the slave device does not acknowledge any of the bytes, an error shall be returned.
- * @param address 7-bit I2C address to write to
- * @param data    pointer to the buffer containing the data to write
- * @param count   number of bytes to read from the buffer and send over I2C
- * @returns 0 on success, error code otherwise. */
-int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
-    if (i2c_address != address) {
-        ioctl(i2c_device, I2C_SLAVE, address);
-        i2c_address = address;
-    }
-    if (write(i2c_device, data, count) != count) {
-        return I2C_WRITE_FAILED;
-    }
-    return 0;
-}
 
 /** Execute one read transaction on the I2C bus, reading a given number of bytes.
  * If the device does not acknowledge the read command, an error shall be returned.
