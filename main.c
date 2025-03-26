@@ -158,7 +158,7 @@ int main(int argc, char *argv[]){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
         exit(EXIT_FAILURE);
     }
-    
+    printf("main_#161 Tt is success.");
     /// Obtain the device marking and opening message on screen.
     if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
         strcpy(logMessage,"センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n"); 

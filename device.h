@@ -29,7 +29,10 @@
  * @param data    pointer to the buffer containing the data to write
  * @param count   number of bytes to read from the buffer and send over I2C
  * @returns 0 on success, error code otherwise */
-int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count);
+int8_t i2c_hal_write(uint8_t, const uint8_t*, uint16_t);
+// int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count);
+
+int8_t i2c_cmd_write(uint16_t);
 
 /** DeviceReset() - Executes a reset on the device.
  * @return 0 on success, an error code otherwise */

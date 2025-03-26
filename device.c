@@ -32,11 +32,22 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
         ioctl(i2c_device, I2C_SLAVE, address);
         i2c_address = address;
     }
+    printf("i2c_cmd_write i2c_address is %d\n", i2c_address);
     if (write(i2c_device, data, count) != count) {
+        printf("I'm here.\n");
         return I2C_WRITE_FAILED;
     }
+    printf("Or here.\n");
     return 0;
 }
+
+int8_t i2c_cmd_write(uint16_t cmd)
+{
+    int8_t error = NO_ERROR;
+    
+    return error; 
+}
+
 
 int16_t DeviceReset(void) {
     int16_t error;
