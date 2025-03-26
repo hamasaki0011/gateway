@@ -258,7 +258,7 @@ int main(int argc, char *argv[]){
                 printf("%s @%s\n", dateNow, timeNow);
                 printf("観測サイト: %s\n", Site.name);
                 for(i = 0; i < Site.num; i++) printf("%s: %.1f %s", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
-                printf("\nWait a second.\n...\n");
+                printf("\n\n ...> Wait a second ...\n\n");
 
             }
 
