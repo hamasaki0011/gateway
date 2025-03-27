@@ -48,7 +48,6 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
         ioctl(i2c_device, I2C_SLAVE, address);
         i2c_address = address;
     }
-    printf("i2c_hal_write_#52 i2c_address is %d\n", i2c_address);
     printf("i2c_hal_write_#53 i2c_device is %d\n", i2c_device);
     if (write(i2c_device, data, count) != count) {
         return I2C_WRITE_FAILED;
@@ -92,27 +91,25 @@ int16_t DeviceReset(void) {
     //     return error;
     // }
     usleep(100000);
-
-    i2c_hal_free();
-
     return error;
 }
 
 int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_size) {
-    int16_t error;
+    int16_t error = NO_ERROR;
     uint8_t buffer[48];
-    uint16_t offset = 0;
+    // uint16_t offset = 0;
     uint16_t command = 0xD060;
 
-    i2c_hal_init();
+    error = i2c_cmd_write(command);
+    if(error) return error;
 
-    buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
+    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
+    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
 
-    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    if (error) {
-        return error;
-    }
+    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
+    // if (error) {
+    //     return error;
+    // }
 
     usleep(2000);
 
@@ -122,9 +119,7 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
     }
     copy_bytes(&buffer[0], deviceMarking, deviceMarking_size);
 
-    // i2c_hal_free();
-
-    return NO_ERROR;
+    return error;
 }
 
 int16_t StartContinuousMeasurement(void) {
