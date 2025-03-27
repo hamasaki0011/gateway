@@ -109,7 +109,7 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
     }
     copy_bytes(&buffer[0], deviceMarking, deviceMarking_size);
 
-    i2c_hal_free();
+    // i2c_hal_free();
 
     return NO_ERROR;
 }
@@ -192,6 +192,9 @@ int16_t StopMeasurement(void) {
     }
     
     usleep(50000);
+    
+    i2c_hal_free();
+
     return NO_ERROR;
 }
 
