@@ -48,28 +48,24 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
         ioctl(i2c_device, I2C_SLAVE, address);
         i2c_address = address;
     }
-    printf("i2c_hal_write_#53 i2c_device is %d\n", i2c_device);
-    if (write(i2c_device, data, count) != count) {
-        return I2C_WRITE_FAILED;
-    }
-    return 0;
+
+    if (write(i2c_device, data, count) != count) return I2C_WRITE_FAILED;
+
+    return NO_ERROR;
 }
 
 int8_t i2c_cmd_write(uint16_t cmd)
 {
-    int8_t error = NO_ERROR;
+    // int8_t error = NO_ERROR;
     uint8_t buffer[2];
     uint16_t offset = 0;
     
     buffer[offset++] = (uint8_t)((cmd & 0xFF00) >> 8);
     buffer[offset++] = (uint8_t)((cmd & 0x00FF) >> 0);
-
-    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    if (error) {
-        return error;
-    }
+    // error = ;    
+    if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) return I2C_WRITE_FAILED;
     
-    return error; 
+    return NO_ERROR; 
 }
 
 
@@ -167,7 +163,7 @@ int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
 int8_t BlankRead(){
     float data1 = 0.0, data2 = 0.0, data3 = 0.0;
 
-    // It may be adjust the measurement interval around for 500ms
+    // It may need to adjust around 500ms as the wait time.
     usleep(500000); // Original software settings.
     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
         printf("Error: Failed to read sensor data\n");
