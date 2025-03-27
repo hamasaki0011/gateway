@@ -49,8 +49,8 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
         ioctl(i2c_device, I2C_SLAVE, address);
         i2c_address = address;
     }
-    printf("i2c_hal_write_#52 i2c_address is %d/n", i2c_address);
-    printf("i2c_hal_write_#53 i2c_device is %d/n", i2c_device);
+    printf("i2c_hal_write_#52 i2c_address is %d\n", i2c_address);
+    printf("i2c_hal_write_#53 i2c_device is %d\n", i2c_device);
     if (write(i2c_device, data, count) != count) {
         return I2C_WRITE_FAILED;
     }
@@ -82,7 +82,7 @@ int16_t DeviceReset(void) {
     }
     usleep(100000);
 
-    i2c_hal_free();
+    // i2c_hal_free();
     
     return NO_ERROR;
 }
@@ -108,6 +108,9 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
         return error;
     }
     copy_bytes(&buffer[0], deviceMarking, deviceMarking_size);
+
+    i2c_hal_free();
+
     return NO_ERROR;
 }
 
