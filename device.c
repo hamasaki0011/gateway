@@ -93,6 +93,8 @@ int16_t DeviceReset(void) {
     // }
     usleep(100000);
 
+    i2c_hal_free();
+
     return error;
 }
 
@@ -101,6 +103,8 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
     uint8_t buffer[48];
     uint16_t offset = 0;
     uint16_t command = 0xD060;
+
+    i2c_hal_init();
 
     buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
     buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);

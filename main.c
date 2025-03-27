@@ -158,14 +158,13 @@ int main(int argc, char *argv[]){
         perror("センサーデバイスの初期化に失敗しました... プログラムを終了します.\n");
         exit(EXIT_FAILURE);
     }
-    printf("main_#161 Device rest sequence was success.");
     /// Obtain the device marking and opening message on screen.
     if (GetDeviceMarking(&deviceMarking[0], sizeof(deviceMarking)) != NO_ERROR) {
         strcpy(logMessage,"センサーのシリアルコード取得に失敗しました... プログラムを終了します.\n"); 
         perror(logMessage);
         exit(EXIT_FAILURE);
     }
-    printf("The serial No.: %s.\n\n", deviceMarking);
+    printf("シリアルコード No.: %s.\n\n", deviceMarking);
         
     if (StartContinuousMeasurement() != NO_ERROR) {
         perror("センサーを連続読み出しモードに設定できませんでした... プログラムを終了します.\n");
