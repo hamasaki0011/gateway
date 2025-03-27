@@ -108,8 +108,6 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
 
 int16_t StartContinuousMeasurement(void) {
     int16_t error = NO_ERROR;
-    // uint8_t buffer[2];
-    // uint16_t offset = 0;
     uint16_t command = 0x06;
 
     error = i2c_cmd_write(command);
@@ -146,32 +144,17 @@ int16_t StartContinuousMeasurement(void) {
 // }
 int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
     int16_t error = NO_ERROR;
-    // int16_t hcho_ticks;
-    // int16_t humidity_ticks;
-    // int16_t temperature_ticks;
     uint8_t buffer[9];
-    // uint16_t offset = 0;
     uint16_t command = 0x327;
     
     error = i2c_cmd_write(command);
     if(error) return error;
-    
-    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
-    // if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) return I2C_WRITE_FAILED;
 
     usleep(5000);
     error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
     if (error) {
         return error;
     }    
-
-    // hcho_ticks = (uint16_t)buffer[0] << 8 | (uint16_t)buffer[1];
-    // humidity_ticks = (uint16_t)buffer[2] << 8 | (uint16_t)buffer[3];
-    // temperature_ticks = (uint16_t)buffer[4] << 8 | (uint16_t)buffer[5];
-    // *data1 = (float)hcho_ticks / 5.0f;
-    // *data2 = (float)humidity_ticks / 100.0f;
-    // *data3 = (float)temperature_ticks / 200.0f;
 
     *data1 = (float)((uint16_t)buffer[0] << 8 | (uint16_t)buffer[1]) / 5.0f;
     *data2 = (float)((uint16_t)buffer[2] << 8 | (uint16_t)buffer[3]) / 100.0f;

@@ -208,7 +208,7 @@ int main(int argc, char *argv[]){
 
         if(second % 10 == 0){
             if(flgDisp == 0){
-                float data1, data2, data3;
+                float data1 = 0.0, data2 = 0.0, data3 = 0.0;
                 int8_t i;
 
                 /// Display measured data on screen.
@@ -217,14 +217,19 @@ int main(int argc, char *argv[]){
                 // if(ReadSensor(&data1, &data2, &data3) == 0)
 
                 /// Read Sensirion sensor' data.
-                if(ReadMeasuredValues(&data1, &data2, &data3) != NO_ERROR){
-                    for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
-                    printf("Failed to read Sensor data.\n");
-
-                }else{
+                if(ReadMeasuredValues(&data1, &data2, &data3) == NO_ERROR){
+                    // for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
+                    // printf("Failed to read Sensor data.\n");
                     Sensor[0].data = data1;
                     Sensor[1].data = data2;
                     Sensor[2].data = data3;
+
+                }
+                else{
+                    printf("Failed to read Sensor data.\n");
+                    // Sensor[0].data = data1;
+                    // Sensor[1].data = data2;
+                    // Sensor[2].data = data3;
                 }
 
                 /// Display read data on the screen.
