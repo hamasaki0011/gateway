@@ -151,6 +151,7 @@ int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
     if(error) return error;
 
     usleep(5000);
+
     error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
     if (error) {
         return error;
@@ -162,7 +163,6 @@ int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
 
     return error;
 }
-
 
 int8_t BlankRead(){
     float data1 = 0.0, data2 = 0.0, data3 = 0.0;
@@ -177,24 +177,28 @@ int8_t BlankRead(){
 }
 
 int16_t StopMeasurement(void) {
-    int16_t error;
-    uint8_t buffer[2];
-    uint16_t offset = 0;
+    int16_t error = NO_ERROR;
+    // uint8_t buffer[2];
+    // uint16_t offset = 0;
     uint16_t command = 0x104;
 
-    buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
+    error = i2c_cmd_write(command);
+    if(error) return error;
     
-    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    if (error) {
-        return error;
-    }
+    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
+    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
+    
+    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
+    // if (error) {
+    //     return error;
+    // }
     
     usleep(50000);
 
+    // And stop sensor operation.
     i2c_hal_free();
 
-    return NO_ERROR;
+    return error;
 }
 
 int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {

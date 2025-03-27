@@ -180,6 +180,7 @@ int main(int argc, char *argv[]){
         time_t timer;
         int year, month, day, hour, minute, second;
         char dateNow[32], timeNow[16], now[48];
+        char ext[2];
 
         /**
         *  Case 0: Using a data logger connecting one or many sensors,
@@ -214,23 +215,14 @@ int main(int argc, char *argv[]){
                 /// Display measured data on screen.
                 flgDisp = 1;
 
-                // if(ReadSensor(&data1, &data2, &data3) == 0)
-
                 /// Read Sensirion sensor' data.
                 if(ReadMeasuredValues(&data1, &data2, &data3) == NO_ERROR){
-                    // for(i = 0; i < Site.num; i++) Sensor[i].data = 0.0;
-                    // printf("Failed to read Sensor data.\n");
                     Sensor[0].data = data1;
                     Sensor[1].data = data2;
                     Sensor[2].data = data3;
 
                 }
-                else{
-                    printf("Failed to read Sensor data.\n");
-                    // Sensor[0].data = data1;
-                    // Sensor[1].data = data2;
-                    // Sensor[2].data = data3;
-                }
+                else printf("Failed to read Sensor data.\n");
 
                 /// Display read data on the screen.
                 printf("%s @%s\n", dateNow, timeNow);
@@ -251,6 +243,15 @@ int main(int argc, char *argv[]){
             flgDisp = 0;
             flgRec = 0;
         }
+
+        /// Set key-input process.
+        scanf("%s", ext);
+        if(strcmp(ext, "q") == 0){
+            printf("測定を中止して、プログラムを終了します\n");
+            StopMeasurement();
+            return 0;
+        }
+
     }
     
     // To finish this application
