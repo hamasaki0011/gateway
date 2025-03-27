@@ -70,9 +70,17 @@ int8_t BlankRead(void);
  * @return 0 on success, an error code otherwise */
 int16_t StopMeasurement(void);
 
-/* Not use function.
-int8_t SendData(int16_t sock, SDATA h);
-*/                                
+/** Execute one read transaction on the I2C bus, reading a given number of bytes.
+ * If the device does not acknowledge the read command, an error shall be returned.
+ * @param address 7-bit I2C address to read from
+ * @param data    pointer to the buffer where the data is to be stored
+ * @param count   number of bytes to read from I2C and store in the buffer
+ * @returns 0 on success, error code otherwise */
+int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count);
+
+uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count);
+
+int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum);
 
 /** i2c_read_data_inplace() - Reads data from the Sensor.
  * @param address              Sensor I2C address
@@ -85,20 +93,7 @@ int8_t SendData(int16_t sock, SDATA h);
  * @return            NO_ERROR on success, an error code otherwise */
 int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length);
 
-/** Initialize all hardware and software components that are needed for the I2C communication. */
-void i2c_hal_init(void);
 
-/** Execute one read transaction on the I2C bus, reading a given number of bytes.
- * If the device does not acknowledge the read command, an error shall be returned.
- * @param address 7-bit I2C address to read from
- * @param data    pointer to the buffer where the data is to be stored
- * @param count   number of bytes to read from I2C and store in the buffer
- * @returns 0 on success, error code otherwise */
-int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count);
-
-uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count);
-
-int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum);
 
 /** i2c_fill_cmd_send_buf() - create the i2c send buffer for a command
  * and a set of argument words. The output buffer interleaves argument words

@@ -68,12 +68,10 @@ int8_t i2c_cmd_write(uint16_t cmd)
 
 
 int16_t DeviceReset(void) {
-    // int16_t error = NO_ERROR;
     uint16_t command = 0xd304;
     
     i2c_hal_init();
 
-    // error = i2c_cmd_write(command);
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(100000);
@@ -86,7 +84,6 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
     uint8_t buffer[48];
     uint16_t command = 0xD060;
 
-    // error = i2c_cmd_write(command);
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(2000);
@@ -101,10 +98,8 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
 }
 
 int16_t StartContinuousMeasurement(void) {
-    // int16_t error = NO_ERROR;
     uint16_t command = 0x06;
 
-    // error = i2c_cmd_write(command);
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(1000);
@@ -141,7 +136,6 @@ int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
     uint8_t buffer[9];
     uint16_t command = 0x327;
     
-    // error = i2c_cmd_write(command);
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(5000);
@@ -171,21 +165,9 @@ int8_t BlankRead(){
 }
 
 int16_t StopMeasurement(void) {
-    // int16_t error = NO_ERROR;
-    // uint8_t buffer[2];
-    // uint16_t offset = 0;
     uint16_t command = 0x104;
 
-    // error = i2c_cmd_write(command);
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
-    
-    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
-    
-    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    // if (error) {
-    //     return error;
-    // }
     
     usleep(50000);
 
@@ -194,27 +176,6 @@ int16_t StopMeasurement(void) {
 
     return NO_ERROR;
 }
-
-int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
-    int16_t error;
-    uint16_t i, j;
-    uint16_t size = (expected_data_length / WORD_SIZE) * (WORD_SIZE + CRC8_LEN);
-
-    if (expected_data_length % WORD_SIZE != 0) return BYTE_NUM_ERROR;
-    if (i2c_hal_read(address, buffer, size)) return I2C_READ_FAILED;
-
-    for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
-
-        error = i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE]);
-        if (error) {
-            return error;
-        }
-        buffer[j++] = buffer[i];
-        buffer[j++] = buffer[i + 1];
-    }
-    return NO_ERROR;
-}
-
 
 /** Execute one read transaction on the I2C bus, reading a given number of bytes.
  * If the device does not acknowledge the read command, an error shall be returned.
@@ -257,6 +218,28 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
     if (i2c_generate_crc(data, count) != checksum) return CRC_ERROR;    
     return NO_ERROR;
 }
+
+int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
+    int16_t error;
+    uint16_t i, j;
+    uint16_t size = (expected_data_length / WORD_SIZE) * (WORD_SIZE + CRC8_LEN);
+
+    if (expected_data_length % WORD_SIZE != 0) return BYTE_NUM_ERROR;
+    if (i2c_hal_read(address, buffer, size)) return I2C_READ_FAILED;
+
+    for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
+
+        error = i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE]);
+        if (error) {
+            return error;
+        }
+        buffer[j++] = buffer[i];
+        buffer[j++] = buffer[i + 1];
+    }
+    return NO_ERROR;
+}
+
+
 
 // 3 times @2024.12.23
 uint16_t i2c_fill_cmd_send_buf(uint8_t* buf, uint16_t cmd, const uint16_t* args, uint8_t num_args){
