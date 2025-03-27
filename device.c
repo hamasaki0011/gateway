@@ -29,7 +29,7 @@ void i2c_hal_init(void) {
     return;
 }
 
-/** Release all resources initialized by sensirion_i2c_hal_init(). */
+/** Release all resources initialized */
 void i2c_hal_free(void) {
     /// close i2c adapter
     if (i2c_device >= 0) close(i2c_device);
@@ -154,14 +154,23 @@ int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
 
 int8_t BlankRead(){
     float data1 = 0.0, data2 = 0.0, data3 = 0.0;
+    int8_t error = NO_ERROR;
 
     // It may need to adjust around 500ms as the wait time.
     usleep(500000); // Original software settings.
-    if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+
+    // if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+    //     printf("Error: Failed to read sensor data\n");
+    //     return -1;
+    // }
+    error = ReadMeasuredValues(&data1, &data2, &data3);
+    
+    if(error){
         printf("Error: Failed to read sensor data\n");
-        return -1;
+        return error;
     }
-    return 0;    
+
+    return error;    
 }
 
 int16_t StopMeasurement(void) {
@@ -237,45 +246,6 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
 
     return NO_ERROR;
 }
-
-// 3 times @2024.12.23
-// uint16_t i2c_fill_cmd_send_buf(uint8_t* buf, uint16_t cmd, const uint16_t* args, uint8_t num_args){
-//     uint8_t i;
-//     uint16_t idx = 0;
-
-//     buf[idx++] = (uint8_t)((cmd & 0xFF00) >> 8);
-//     buf[idx++] = (uint8_t)((cmd & 0x00FF) >> 0);
-//     for (i = 0; i < num_args; ++i) {
-//         buf[idx++] = (uint8_t)((args[i] & 0xFF00) >> 8);
-//         buf[idx++] = (uint8_t)((args[i] & 0x00FF) >> 0);
-//         uint8_t crc = i2c_generate_crc((uint8_t*)&buf[idx - 2], WORD_SIZE);
-//         buf[idx++] = crc;
-//     }
-//     return idx;
-// }
-
-// // 1 time @2024.13.23
-// int16_t i2c_read_words_as_bytes(uint8_t address, uint8_t* data, uint16_t num_words) {
-//     int16_t ret;
-//     uint16_t i, j;
-//     uint16_t size = num_words * (WORD_SIZE + CRC8_LEN);
-//     uint16_t word_buf[MAX_BUFFER_WORDS];
-//     uint8_t* const buf8 = (uint8_t*)word_buf;
-
-//     ret = i2c_hal_read(address, buf8, size);
-//     if (ret != NO_ERROR)
-//         return ret;
-
-//     /* check the CRC for each word */
-//     for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
-//         ret = i2c_check_crc(&buf8[i], WORD_SIZE, buf8[i + WORD_SIZE]);
-//         if (ret != NO_ERROR) return ret;
-//         data[j++] = buf8[i];
-//         data[j++] = buf8[i + 1];
-//     }
-//     return NO_ERROR;
-// }
-
 
 
 
