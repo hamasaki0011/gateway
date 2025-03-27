@@ -21,21 +21,20 @@
 static int8_t i2c_device = -1;
 static uint8_t i2c_address = 0;
 
-/** Initialize all hard- and software components that are needed for the I2C
- * communication. */
+/** Initialize all hard- and software components that are needed for the I2C communication. */
 void i2c_hal_init(void) {
-    /* open i2c adapter */
+    /// open i2c adapter
     i2c_device = open(I2C_DEVICE_PATH, O_RDWR);
-    if (i2c_device == -1)
-        return; /* no error handling */
+    if (i2c_device == -1) return; // no error handling.
+    return;
 }
 
 /** Release all resources initialized by sensirion_i2c_hal_init(). */
 void i2c_hal_free(void) {
-    if (i2c_device >= 0)
-        close(i2c_device);
+    /// close i2c adapter
+    if (i2c_device >= 0) close(i2c_device);
+    return;
 }
-
 
 /** Execute one write transaction on the I2C bus, sending a given number of bytes. 
  * The bytes in the supplied buffer must be sent to the given address. 
@@ -60,31 +59,41 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
 int8_t i2c_cmd_write(uint16_t cmd)
 {
     int8_t error = NO_ERROR;
+    uint8_t buffer[2];
+    uint16_t offset = 0;
+    
+    buffer[offset++] = (uint8_t)((cmd & 0xFF00) >> 8);
+    buffer[offset++] = (uint8_t)((cmd & 0x00FF) >> 0);
+
+    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
+    if (error) {
+        return error;
+    }
     
     return error; 
 }
 
 
 int16_t DeviceReset(void) {
-    int16_t error;
-    uint8_t buffer[2];
-    uint16_t offset = 0;
+    int16_t error = NO_ERROR;
+    // uint8_t buffer[2];
+    // uint16_t offset = 0;
     uint16_t command = 0xd304;
     
     i2c_hal_init();
 
-    buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
+    error = i2c_cmd_write(command);
+    if(error) return error;
+    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
+    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
 
-    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    if (error) {
-        return error;
-    }
+    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
+    // if (error) {
+    //     return error;
+    // }
     usleep(100000);
 
-    // i2c_hal_free();
-    
-    return NO_ERROR;
+    return error;
 }
 
 int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_size) {
@@ -192,7 +201,7 @@ int16_t StopMeasurement(void) {
     }
     
     usleep(50000);
-    
+
     i2c_hal_free();
 
     return NO_ERROR;
