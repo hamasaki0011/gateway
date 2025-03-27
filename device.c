@@ -114,25 +114,41 @@ int16_t StartContinuousMeasurement(void) {
 
     error = i2c_cmd_write(command);
     if(error) return error;
-    
-    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
-    
-    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    // if (error) {
-    //     return error;
-    // }
 
     usleep(1000);
     
     return error;    // NO_ERROR: 0 in common.h
 }
 
-int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
+/** [MEMO] Read procedure for Sensirion sensor' data
+ * For Sensirion's sensor
+ * The structures of the Result
+ * char *gasName;       // gas name
+ * char *humid;         // humidity
+ * char *temp;          // temperature
+ * float gas;           // gas concentration value
+ * float humidity;      // humidity value
+ * float temperature;   // temperature value */
+        
+// SDATA ReadMeasure(SDATA r){
+//     float data1, data2, data3;
+//     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
+//         r.gas = 0.0;
+//         r.humidity = 0.0;
+//         r.temperature = 0.0;
+//         printf("Failed to read Sensor data.\n");
+//     }else{
+//         r.gas = data1;
+//         r.humidity = data2;
+//         r.temperature = data3;
+//     }    
+//     return r;
+// }
+int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
     int16_t error = NO_ERROR;
-    int16_t hcho_ticks;
-    int16_t humidity_ticks;
-    int16_t temperature_ticks;
+    // int16_t hcho_ticks;
+    // int16_t humidity_ticks;
+    // int16_t temperature_ticks;
     uint8_t buffer[9];
     // uint16_t offset = 0;
     uint16_t command = 0x327;
@@ -142,9 +158,6 @@ int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
     
     // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
     // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
-
-    // //error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    // //if (error) {
     // if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) return I2C_WRITE_FAILED;
 
     usleep(5000);
@@ -153,13 +166,16 @@ int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
         return error;
     }    
 
-    hcho_ticks = (uint16_t)buffer[0] << 8 | (uint16_t)buffer[1];
-    humidity_ticks = (uint16_t)buffer[2] << 8 | (uint16_t)buffer[3];
-    temperature_ticks = (uint16_t)buffer[4] << 8 | (uint16_t)buffer[5];
+    // hcho_ticks = (uint16_t)buffer[0] << 8 | (uint16_t)buffer[1];
+    // humidity_ticks = (uint16_t)buffer[2] << 8 | (uint16_t)buffer[3];
+    // temperature_ticks = (uint16_t)buffer[4] << 8 | (uint16_t)buffer[5];
+    // *data1 = (float)hcho_ticks / 5.0f;
+    // *data2 = (float)humidity_ticks / 100.0f;
+    // *data3 = (float)temperature_ticks / 200.0f;
 
-    *hcho = (float)hcho_ticks / 5.0f;
-    *humidity = (float)humidity_ticks / 100.0f;
-    *temperature = (float)temperature_ticks / 200.0f;
+    *data1 = (float)((uint16_t)buffer[0] << 8 | (uint16_t)buffer[1]) / 5.0f;
+    *data2 = (float)((uint16_t)buffer[2] << 8 | (uint16_t)buffer[3]) / 100.0f;
+    *data3 = (float)((uint16_t)buffer[4] << 8 | (uint16_t)buffer[5]) / 200.0f;
 
     return error;
 }

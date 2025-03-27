@@ -227,29 +227,6 @@ int main(int argc, char *argv[]){
                     Sensor[2].data = data3;
                 }
 
-                /// [MEMO] For Sensirion's sensor
-                /** The structures of the Result
-                 * char *gasName;       // gas name
-                 * char *humid;         // humidity
-                 * char *temp;          // temperature
-                 * float gas;           // gas concentration value
-                 * float humidity;      // humidity value
-                 * float temperature;   // temperature value */
-                // SDATA ReadMeasure(SDATA r){
-                //     float data1, data2, data3;
-                //     if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
-                //         r.gas = 0.0;
-                //         r.humidity = 0.0;
-                //         r.temperature = 0.0;
-                //         printf("Failed to read Sensor data.\n");
-                //     }else{
-                //         r.gas = data1;
-                //         r.humidity = data2;
-                //         r.temperature = data3;
-                //     }    
-                //     return r;
-                // }
-
                 /// Display read data on the screen.
                 printf("%s @%s\n", dateNow, timeNow);
                 printf("観測サイト: %s\n", Site.name);
