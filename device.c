@@ -191,7 +191,7 @@ int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
     if (read(i2c_device, data, count) != count) {
         return I2C_READ_FAILED;
     }
-    return 0;
+    return NO_ERROR;
 }
 
 // 7 times @2024.12.23
@@ -220,7 +220,7 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
 }
 
 int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
-    int16_t error;
+    // int16_t error;
     uint16_t i, j;
     uint16_t size = (expected_data_length / WORD_SIZE) * (WORD_SIZE + CRC8_LEN);
 
@@ -229,10 +229,12 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
 
     for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
 
-        error = i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE]);
-        if (error) {
-            return error;
-        }
+        // error = i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE]);
+        // if (error) {
+        //     return error;
+        // }
+        if (i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE])) return CRC_ERROR;
+
         buffer[j++] = buffer[i];
         buffer[j++] = buffer[i + 1];
     }
