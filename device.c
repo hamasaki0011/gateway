@@ -56,13 +56,11 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
 
 int8_t i2c_cmd_write(uint16_t cmd)
 {
-    // int8_t error = NO_ERROR;
     uint8_t buffer[2];
     uint16_t offset = 0;
     
     buffer[offset++] = (uint8_t)((cmd & 0xFF00) >> 8);
     buffer[offset++] = (uint8_t)((cmd & 0x00FF) >> 0);
-    // error = ;    
     if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) return I2C_WRITE_FAILED;
     
     return NO_ERROR; 
@@ -70,17 +68,17 @@ int8_t i2c_cmd_write(uint16_t cmd)
 
 
 int16_t DeviceReset(void) {
-    int16_t error = NO_ERROR;
+    // int16_t error = NO_ERROR;
     uint16_t command = 0xd304;
     
     i2c_hal_init();
 
-    error = i2c_cmd_write(command);
-    if(error) return error;
+    // error = i2c_cmd_write(command);
+    if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(100000);
     
-    return error;
+    return NO_ERROR;
 }
 
 int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_size) {
@@ -88,8 +86,8 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
     uint8_t buffer[48];
     uint16_t command = 0xD060;
 
-    error = i2c_cmd_write(command);
-    if(error) return error;
+    // error = i2c_cmd_write(command);
+    if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(2000);
 
@@ -103,15 +101,15 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
 }
 
 int16_t StartContinuousMeasurement(void) {
-    int16_t error = NO_ERROR;
+    // int16_t error = NO_ERROR;
     uint16_t command = 0x06;
 
-    error = i2c_cmd_write(command);
-    if(error) return error;
+    // error = i2c_cmd_write(command);
+    if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(1000);
     
-    return error;    // NO_ERROR: 0 in common.h
+    return NO_ERROR;
 }
 
 /** [MEMO] Read procedure for Sensirion sensor' data
@@ -143,8 +141,8 @@ int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
     uint8_t buffer[9];
     uint16_t command = 0x327;
     
-    error = i2c_cmd_write(command);
-    if(error) return error;
+    // error = i2c_cmd_write(command);
+    if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(5000);
 
@@ -173,13 +171,13 @@ int8_t BlankRead(){
 }
 
 int16_t StopMeasurement(void) {
-    int16_t error = NO_ERROR;
+    // int16_t error = NO_ERROR;
     // uint8_t buffer[2];
     // uint16_t offset = 0;
     uint16_t command = 0x104;
 
-    error = i2c_cmd_write(command);
-    if(error) return error;
+    // error = i2c_cmd_write(command);
+    if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
     
     // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
     // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
@@ -194,7 +192,7 @@ int16_t StopMeasurement(void) {
     // And stop sensor operation.
     i2c_hal_free();
 
-    return error;
+    return NO_ERROR;
 }
 
 int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
