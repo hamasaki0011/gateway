@@ -206,7 +206,7 @@ int main(int argc, char *argv[]){
         sprintf(timeNow, "%d:%d:%d", hour, minute, second);
         sprintf(now, "%s %s", dateNow, timeNow);
 
-        if(second % 5 == 0){
+        if(second % 10 == 0){
             if(flgDisp == 0){
                 float data1, data2, data3;
                 int8_t i;
@@ -257,7 +257,7 @@ int main(int argc, char *argv[]){
                     printf("%s: %.1f [%s]", Sensor[i].name, Sensor[i].data, Sensor[i].unit);
                     if(i < Site.num - 1) printf(", ");
                 }
-                printf("\n\n ...> wait 5 seconds ...>\n\n");
+                printf("\n\n ...> wait 10 seconds ...>\n\n");
 
             }
 

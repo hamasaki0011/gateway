@@ -75,41 +75,25 @@ int8_t i2c_cmd_write(uint16_t cmd)
 
 int16_t DeviceReset(void) {
     int16_t error = NO_ERROR;
-    // uint8_t buffer[2];
-    // uint16_t offset = 0;
     uint16_t command = 0xd304;
     
     i2c_hal_init();
 
     error = i2c_cmd_write(command);
     if(error) return error;
-    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
 
-    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    // if (error) {
-    //     return error;
-    // }
     usleep(100000);
+    
     return error;
 }
 
 int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_size) {
     int16_t error = NO_ERROR;
     uint8_t buffer[48];
-    // uint16_t offset = 0;
     uint16_t command = 0xD060;
 
     error = i2c_cmd_write(command);
     if(error) return error;
-
-    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
-
-    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    // if (error) {
-    //     return error;
-    // }
 
     usleep(2000);
 
@@ -123,20 +107,25 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
 }
 
 int16_t StartContinuousMeasurement(void) {
-    int16_t error;
-    uint8_t buffer[2];
-    uint16_t offset = 0;
+    int16_t error = NO_ERROR;
+    // uint8_t buffer[2];
+    // uint16_t offset = 0;
     uint16_t command = 0x06;
 
-    buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
+    error = i2c_cmd_write(command);
+    if(error) return error;
     
-    error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    if (error) {
-        return error;
-    }
+    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
+    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
+    
+    // error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
+    // if (error) {
+    //     return error;
+    // }
+
     usleep(1000);
-    return NO_ERROR;    // NO_ERROR: 0 in common.h
+    
+    return error;    // NO_ERROR: 0 in common.h
 }
 
 int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
