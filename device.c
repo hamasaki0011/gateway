@@ -17,8 +17,25 @@
  * can be included. The define was added in Linux v3.10 and never changed since then.  */
 #define I2C_SLAVE       0x0703
 
+// Descriptor
 static int8_t i2c_device = -1;
 static uint8_t i2c_address = 0;
+
+/** Initialize all hard- and software components that are needed for the I2C
+ * communication. */
+void i2c_hal_init(void) {
+    /* open i2c adapter */
+    i2c_device = open(I2C_DEVICE_PATH, O_RDWR);
+    if (i2c_device == -1)
+        return; /* no error handling */
+}
+
+/** Release all resources initialized by sensirion_i2c_hal_init(). */
+void i2c_hal_free(void) {
+    if (i2c_device >= 0)
+        close(i2c_device);
+}
+
 
 /** Execute one write transaction on the I2C bus, sending a given number of bytes. 
  * The bytes in the supplied buffer must be sent to the given address. 
@@ -32,12 +49,11 @@ int8_t i2c_hal_write(uint8_t address, const uint8_t* data, uint16_t count) {
         ioctl(i2c_device, I2C_SLAVE, address);
         i2c_address = address;
     }
-    printf("i2c_cmd_write i2c_address is %d\n", i2c_address);
+    printf("i2c_hal_write_#52 i2c_address is %d/n", i2c_address);
+    printf("i2c_hal_write_#53 i2c_device is %d/n", i2c_device);
     if (write(i2c_device, data, count) != count) {
-        printf("I'm here.\n");
         return I2C_WRITE_FAILED;
     }
-    printf("Or here.\n");
     return 0;
 }
 
@@ -55,7 +71,7 @@ int16_t DeviceReset(void) {
     uint16_t offset = 0;
     uint16_t command = 0xd304;
     
-    i2c_device = open(I2C_DEVICE_PATH, O_RDWR);
+    i2c_hal_init();
 
     buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
     buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
@@ -65,6 +81,9 @@ int16_t DeviceReset(void) {
         return error;
     }
     usleep(100000);
+
+    i2c_hal_free();
+    
     return NO_ERROR;
 }
 
