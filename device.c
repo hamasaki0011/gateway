@@ -276,49 +276,32 @@ int16_t i2c_read_words_as_bytes(uint8_t address, uint8_t* data, uint16_t num_wor
     return NO_ERROR;
 }
 
-// 1 time @2024.12.23
-int16_t i2c_read_words(uint8_t address, uint16_t* data_words, uint16_t num_words) {
-    int16_t ret;
-    uint8_t i;
-
-    ret = i2c_read_words_as_bytes(address, (uint8_t*)data_words, num_words);
-    if (ret != NO_ERROR) return ret;
-
-    for (i = 0; i < num_words; ++i) {
-        const uint8_t* word_bytes = (uint8_t*)&data_words[i];
-        data_words[i] = ((uint16_t)word_bytes[0] << 8) | word_bytes[1];
-    }
-    return NO_ERROR;
-}
-
-
-// 1 time @2024.12.23
-int16_t i2c_delayed_read_cmd(uint8_t address, uint16_t cmd, uint32_t delay_us, uint16_t* data_words, uint16_t num_words) {
-    int16_t ret;
-    uint8_t buf[COMMAND_SIZE];
-
-    i2c_fill_cmd_send_buf(buf, cmd, NULL, 0);
-    ret = i2c_hal_write(address, buf, COMMAND_SIZE);
-    if (ret != NO_ERROR) return ret;
-    if (delay_us) usleep(delay_us);
-    return i2c_read_words(address, data_words, num_words);
-}
-
 // // 1 time @2024.12.23
-// int16_t i2c_read_cmd(uint8_t address, uint16_t cmd, uint16_t* data_words, uint16_t num_words) {
-//     return i2c_delayed_read_cmd(address, cmd, 0, data_words, num_words);
+// int16_t i2c_read_words(uint8_t address, uint16_t* data_words, uint16_t num_words) {
+//     int16_t ret;
+//     uint8_t i;
+
+//     ret = i2c_read_words_as_bytes(address, (uint8_t*)data_words, num_words);
+//     if (ret != NO_ERROR) return ret;
+
+//     for (i = 0; i < num_words; ++i) {
+//         const uint8_t* word_bytes = (uint8_t*)&data_words[i];
+//         data_words[i] = ((uint16_t)word_bytes[0] << 8) | word_bytes[1];
+//     }
+//     return NO_ERROR;
 // }
 
+
 // // 1 time @2024.12.23
-// uint16_t i2c_add_uint32_t_to_buffer(uint8_t* buffer, uint16_t offset, uint32_t data) {
-//     buffer[offset++] = (uint8_t)((data & 0xFF000000) >> 24);
-//     buffer[offset++] = (uint8_t)((data & 0x00FF0000) >> 16);
-//     buffer[offset] = i2c_generate_crc(&buffer[offset - WORD_SIZE], WORD_SIZE);
-//     offset++;
-//     buffer[offset++] = (uint8_t)((data & 0x0000FF00) >> 8);
-//     buffer[offset++] = (uint8_t)((data & 0x000000FF) >> 0);
-//     buffer[offset] = i2c_generate_crc(&buffer[offset - WORD_SIZE], WORD_SIZE);
-//     offset++;
-//     return offset;
+// int16_t i2c_delayed_read_cmd(uint8_t address, uint16_t cmd, uint32_t delay_us, uint16_t* data_words, uint16_t num_words) {
+//     int16_t ret;
+//     uint8_t buf[COMMAND_SIZE];
+
+//     i2c_fill_cmd_send_buf(buf, cmd, NULL, 0);
+//     ret = i2c_hal_write(address, buf, COMMAND_SIZE);
+//     if (ret != NO_ERROR) return ret;
+//     if (delay_us) usleep(delay_us);
+//     return i2c_read_words(address, data_words, num_words);
 // }
+
 

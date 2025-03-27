@@ -114,40 +114,23 @@ uint16_t i2c_fill_cmd_send_buf(uint8_t* buf, uint16_t cmd, const uint16_t* args,
  * @return      NO_ERROR on success, an error code otherwise */
 int16_t i2c_read_words(uint8_t address, uint16_t* data_words, uint16_t num_words);
 
-/** i2c_read_words_as_bytes() - read data words as byte-stream from sensor
- * Read bytes without adjusting values to the uP's word-order.
- * @address:    Sensor i2c address
- * @data:       Allocated buffer to store the read bytes. The buffer may also have been modified in case of an error.
- * @num_words:  Number of data words(!) to read (without CRC bytes)
- *              Since only word-chunks can be read from the sensor the size
- *              is still specified in sensor-words (num_words = num_bytes *WORD_SIZE)
- * @return      NO_ERROR on success, an error code otherwise */
-int16_t i2c_read_words_as_bytes(uint8_t address, uint8_t* data, uint16_t num_words);
+// /** i2c_read_words_as_bytes() - read data words as byte-stream from sensor
+//  * Read bytes without adjusting values to the uP's word-order.
+//  * @address:    Sensor i2c address
+//  * @data:       Allocated buffer to store the read bytes. The buffer may also have been modified in case of an error.
+//  * @num_words:  Number of data words(!) to read (without CRC bytes)
+//  *              Since only word-chunks can be read from the sensor the size
+//  *              is still specified in sensor-words (num_words = num_bytes *WORD_SIZE)
+//  * @return      NO_ERROR on success, an error code otherwise */
+// int16_t i2c_read_words_as_bytes(uint8_t address, uint8_t* data, uint16_t num_words);
 
 /** i2c_delayed_read_cmd() - send a command, wait for the sensor to process and read data back
- * @address:    Sensor i2c address
- * @cmd:        Command
- * @delay:      Time in microseconds to delay sending the read request
- * @data_words: Allocated buffer to store the read data
- * @num_words:  Data words to read (without CRC bytes)
- * @return      NO_ERROR on success, an error code otherwise */
-int16_t i2c_delayed_read_cmd(uint8_t address, uint16_t cmd, uint32_t delay_us, uint16_t* data_words, uint16_t num_words);
-
-/** i2c_read_cmd() - reads data words from the sensor after a command is issued
- * @address:    Sensor i2c address
- * @cmd:        Command
- * @data_words: Allocated buffer to store the read data
- * @num_words:  Data words to read (without CRC bytes)
- * @return      NO_ERROR on success, an error code otherwise */
-int16_t i2c_read_cmd(uint8_t address, uint16_t cmd, uint16_t* data_words, uint16_t num_words);
-
-/** i2c_add_uint32_t_to_buffer() - Add a uint32_t to the buffer at offset. Adds 6 bytes to the buffer.
- * @param buffer  Pointer to buffer in which the write frame will be prepared.
- *                Caller needs to make sure that there is enough space after
- *                offset left to write the data into the buffer.
- * @param offset  Offset of the next free byte in the buffer.
- * @param data    uint32_t to be written into the buffer.
- * @return        Offset of next free byte in the buffer after writing the data. */
-uint16_t i2c_add_uint32_t_to_buffer(uint8_t* buffer, uint16_t offset, uint32_t data);
+//  * @address:    Sensor i2c address
+//  * @cmd:        Command
+//  * @delay:      Time in microseconds to delay sending the read request
+//  * @data_words: Allocated buffer to store the read data
+//  * @num_words:  Data words to read (without CRC bytes)
+//  * @return      NO_ERROR on success, an error code otherwise */
+// int16_t i2c_delayed_read_cmd(uint8_t address, uint16_t cmd, uint32_t delay_us, uint16_t* data_words, uint16_t num_words);
 
 #endif /* DEVICE_H */
