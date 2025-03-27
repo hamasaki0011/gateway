@@ -129,20 +129,23 @@ int16_t StartContinuousMeasurement(void) {
 }
 
 int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
-    int16_t error;
+    int16_t error = NO_ERROR;
     int16_t hcho_ticks;
     int16_t humidity_ticks;
     int16_t temperature_ticks;
     uint8_t buffer[9];
-    uint16_t offset = 0;
+    // uint16_t offset = 0;
     uint16_t command = 0x327;
     
-    buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
-    buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
+    error = i2c_cmd_write(command);
+    if(error) return error;
+    
+    // buffer[offset++] = (uint8_t)((command & 0xFF00) >> 8);
+    // buffer[offset++] = (uint8_t)((command & 0x00FF) >> 0);
 
-    //error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
-    //if (error) {
-    if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) return I2C_WRITE_FAILED;
+    // //error = i2c_hal_write(I2C_ADDRESS, &buffer[0], offset);    
+    // //if (error) {
+    // if (i2c_hal_write(I2C_ADDRESS, &buffer[0], offset)) return I2C_WRITE_FAILED;
 
     usleep(5000);
     error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
@@ -158,7 +161,7 @@ int16_t ReadMeasuredValues(float* hcho, float* humidity, float* temperature) {
     *humidity = (float)humidity_ticks / 100.0f;
     *temperature = (float)temperature_ticks / 200.0f;
 
-    return NO_ERROR;
+    return error;
 }
 
 
