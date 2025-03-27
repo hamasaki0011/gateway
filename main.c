@@ -38,6 +38,7 @@ int main(int argc, char *argv[]){
     char fileName[256];
     char logMessage[256];
     unsigned char deviceMarking[32];
+    char ext[2];
 //    static char setFile[] = "setup.json";
     //    char json_str[1024];
     
@@ -175,13 +176,16 @@ int main(int argc, char *argv[]){
     BlankRead();
 
     /** main loop */
-    for (;;) {
+    while(strcmp(ext, "q") != 0){
+    // for (;;) {
         static uint8_t flgRec = 0, flgDisp = 0;
         time_t timer;
         int year, month, day, hour, minute, second;
         char dateNow[32], timeNow[16], now[48];
-        char ext[2];
 
+        /// Set key-input process.
+        scanf("%s", ext);
+        
         /**
         *  Case 0: Using a data logger connecting one or many sensors,
         *  and it is connected to a lap-top computer via serial communication interface.
@@ -243,17 +247,10 @@ int main(int argc, char *argv[]){
             flgDisp = 0;
             flgRec = 0;
         }
-
-        /// Set key-input process.
-        scanf("%s", ext);
-        if(strcmp(ext, "q") == 0){
-            printf("測定を中止して、プログラムを終了します\n");
-            StopMeasurement();
-            return 0;
-        }
-
     }
     
+    printf("測定を中止して、プログラムを終了します\n");
+    StopMeasurement();
     // To finish this application
     // What should we do at the next time to start application.
     // send stop command "0x01" to stop measurement to sfa30: sfa3x_i2c.c
