@@ -220,7 +220,6 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
 }
 
 int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
-    // int16_t error;
     uint16_t i, j;
     uint16_t size = (expected_data_length / WORD_SIZE) * (WORD_SIZE + CRC8_LEN);
 
@@ -229,19 +228,15 @@ int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data
 
     for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
 
-        // error = i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE]);
-        // if (error) {
-        //     return error;
-        // }
         if (i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE])) return CRC_ERROR;
 
         buffer[j++] = buffer[i];
         buffer[j++] = buffer[i + 1];
+
     }
+
     return NO_ERROR;
 }
-
-
 
 // 3 times @2024.12.23
 uint16_t i2c_fill_cmd_send_buf(uint8_t* buf, uint16_t cmd, const uint16_t* args, uint8_t num_args){
@@ -309,21 +304,21 @@ int16_t i2c_delayed_read_cmd(uint8_t address, uint16_t cmd, uint32_t delay_us, u
     return i2c_read_words(address, data_words, num_words);
 }
 
-// 1 time @2024.12.23
-int16_t i2c_read_cmd(uint8_t address, uint16_t cmd, uint16_t* data_words, uint16_t num_words) {
-    return i2c_delayed_read_cmd(address, cmd, 0, data_words, num_words);
-}
+// // 1 time @2024.12.23
+// int16_t i2c_read_cmd(uint8_t address, uint16_t cmd, uint16_t* data_words, uint16_t num_words) {
+//     return i2c_delayed_read_cmd(address, cmd, 0, data_words, num_words);
+// }
 
-// 1 time @2024.12.23
-uint16_t i2c_add_uint32_t_to_buffer(uint8_t* buffer, uint16_t offset, uint32_t data) {
-    buffer[offset++] = (uint8_t)((data & 0xFF000000) >> 24);
-    buffer[offset++] = (uint8_t)((data & 0x00FF0000) >> 16);
-    buffer[offset] = i2c_generate_crc(&buffer[offset - WORD_SIZE], WORD_SIZE);
-    offset++;
-    buffer[offset++] = (uint8_t)((data & 0x0000FF00) >> 8);
-    buffer[offset++] = (uint8_t)((data & 0x000000FF) >> 0);
-    buffer[offset] = i2c_generate_crc(&buffer[offset - WORD_SIZE], WORD_SIZE);
-    offset++;
-    return offset;
-}
+// // 1 time @2024.12.23
+// uint16_t i2c_add_uint32_t_to_buffer(uint8_t* buffer, uint16_t offset, uint32_t data) {
+//     buffer[offset++] = (uint8_t)((data & 0xFF000000) >> 24);
+//     buffer[offset++] = (uint8_t)((data & 0x00FF0000) >> 16);
+//     buffer[offset] = i2c_generate_crc(&buffer[offset - WORD_SIZE], WORD_SIZE);
+//     offset++;
+//     buffer[offset++] = (uint8_t)((data & 0x0000FF00) >> 8);
+//     buffer[offset++] = (uint8_t)((data & 0x000000FF) >> 0);
+//     buffer[offset] = i2c_generate_crc(&buffer[offset - WORD_SIZE], WORD_SIZE);
+//     offset++;
+//     return offset;
+// }
 
