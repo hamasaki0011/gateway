@@ -67,7 +67,7 @@ int8_t i2c_cmd_write(uint16_t cmd)
 }
 
 
-int16_t DeviceReset(void) {
+int8_t DeviceReset(void) {
     uint16_t command = 0xd304;
     
     i2c_hal_init();
@@ -79,7 +79,7 @@ int16_t DeviceReset(void) {
     return NO_ERROR;
 }
 
-int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_size) {
+int8_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_size) {
     int16_t error = NO_ERROR;
     uint8_t buffer[48];
     uint16_t command = 0xD060;
@@ -97,7 +97,7 @@ int16_t GetDeviceMarking(unsigned char* deviceMarking, uint8_t deviceMarking_siz
     return error;
 }
 
-int16_t StartContinuousMeasurement(void) {
+int8_t StartContinuousMeasurement(void) {
     uint16_t command = 0x06;
 
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
@@ -131,8 +131,8 @@ int16_t StartContinuousMeasurement(void) {
 //     }    
 //     return r;
 // }
-int16_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
-    int16_t error = NO_ERROR;
+int8_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
+    int8_t error = NO_ERROR;
     uint8_t buffer[9];
     uint16_t command = 0x327;
     
@@ -159,21 +159,16 @@ int8_t BlankRead(){
     // It may need to adjust around 500ms as the wait time.
     usleep(500000); // Original software settings.
 
-    // if(ReadMeasuredValues(&data1, &data2, &data3) != 0){
-    //     printf("Error: Failed to read sensor data\n");
-    //     return -1;
-    // }
     error = ReadMeasuredValues(&data1, &data2, &data3);
-    
     if(error){
         printf("Error: Failed to read sensor data\n");
         return error;
     }
 
-    return error;    
+    return error;
 }
 
-int16_t StopMeasurement(void) {
+int8_t StopMeasurement(void) {
     uint16_t command = 0x104;
 
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
@@ -197,10 +192,11 @@ int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
         ioctl(i2c_device, I2C_SLAVE, address);
         i2c_address = address;
     }
-    if (read(i2c_device, data, count) != count) {
-        return I2C_READ_FAILED;
-    }
+
+    if (read(i2c_device, data, count) != count) return I2C_READ_FAILED;
+    
     return NO_ERROR;
+
 }
 
 // 7 times @2024.12.23
@@ -212,12 +208,15 @@ uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count) {
     // calculates 8-Bit checksum with given polynomial
     for (current_byte = 0; current_byte < count; ++current_byte) {
         crc ^= (data[current_byte]);
+        printf("device_#211 original is %02x", data[current_byte]);
+        printf("device_#212 before_crc is %02x", crc);
         for (crc_bit = 8; crc_bit > 0; --crc_bit) {
             if (crc & 0x80)
                 crc = (crc << 1) ^ CRC8_POLYNOMIAL;
             else
                 crc = (crc << 1);
         }
+        printf("device_#219 crc is %02x", crc);
     }
     return crc;
 }
@@ -228,7 +227,7 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
     return NO_ERROR;
 }
 
-int16_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
+int8_t ReadDataInplace(uint8_t address, uint8_t* buffer, uint16_t expected_data_length) {
     uint16_t i, j;
     uint16_t size = (expected_data_length / WORD_SIZE) * (WORD_SIZE + CRC8_LEN);
 

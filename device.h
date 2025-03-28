@@ -35,21 +35,21 @@ int8_t i2c_hal_write(uint8_t, const uint8_t*, uint16_t);
 int8_t i2c_cmd_write(uint16_t);
 
 /** DeviceReset() - Executes a reset on the device. */
-int16_t DeviceReset(void);
+int8_t DeviceReset(void);
 
 /** GetDeviceMarking() - Read the device marking string from the device. */
-int16_t GetDeviceMarking(unsigned char*, uint8_t);
+int8_t GetDeviceMarking(unsigned char*, uint8_t);
 
 /** StartContinuousMeasurement() - Starts continuous measurement in polling mode. */
-int16_t StartContinuousMeasurement(void);
+int8_t StartContinuousMeasurement(void);
 
 /** ReadMeasuredValues() - Returns the new measurement results as float. */
-int16_t ReadMeasuredValues(float*, float*, float*);
+int8_t ReadMeasuredValues(float*, float*, float*);
 
 int8_t BlankRead(void);
 
 /** Stop_measurement() - Stops the measurement mode and returns to idle */
-int16_t StopMeasurement(void);
+int8_t StopMeasurement(void);
 
 /** Execute one read transaction on the I2C bus, reading a given number of bytes. */
 int8_t i2c_hal_read(uint8_t, uint8_t*, uint16_t);
@@ -59,6 +59,6 @@ uint8_t i2c_generate_crc(const uint8_t*, uint16_t);
 int8_t i2c_check_crc(const uint8_t*, uint16_t, uint8_t);
 
 /** i2c_read_data_inplace() - Reads data from the Sensor. */
-int16_t ReadDataInplace(uint8_t, uint8_t*, uint16_t);
+int8_t ReadDataInplace(uint8_t, uint8_t*, uint16_t);
 
 #endif /* DEVICE_H */
