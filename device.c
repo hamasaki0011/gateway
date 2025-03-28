@@ -208,15 +208,15 @@ uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count) {
     // calculates 8-Bit checksum with given polynomial
     for (current_byte = 0; current_byte < count; ++current_byte) {
         crc ^= (data[current_byte]);
-        printf("device_#211 original is %02x", data[current_byte]);
-        printf("device_#212 before_crc is %02x", crc);
+        printf("device_#211 original is %02x\n", data[current_byte]);
+        printf("device_#212 before_crc is %02x\n", crc);
         for (crc_bit = 8; crc_bit > 0; --crc_bit) {
             if (crc & 0x80)
                 crc = (crc << 1) ^ CRC8_POLYNOMIAL;
             else
                 crc = (crc << 1);
         }
-        printf("device_#219 crc is %02x", crc);
+        printf("device_#219 crc is %02x\n", crc);
     }
     return crc;
 }
