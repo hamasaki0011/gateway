@@ -199,16 +199,44 @@ int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
 
 }
 
-// 7 times @2024.12.23
-uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count) {
+// uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count) {
+//     uint16_t current_byte;
+//     uint8_t crc = CRC8_INIT;
+//     uint8_t crc_bit;
+
+//     // calculates 8-Bit checksum with given polynomial
+//     for (current_byte = 0; current_byte < count; ++current_byte) {
+//         crc ^= (data[current_byte]);
+//         // printf("device_#211 original is %02x\n", data[current_byte]);
+//         // printf("device_#212 crc_before is %02x\n", crc);
+//         for (crc_bit = 8; crc_bit > 0; --crc_bit) {
+//             if (crc & 0x80){
+//                 crc = (crc << 1) ^ CRC8_POLYNOMIAL;
+//                 // printf("device_#216 crc1 is %02x\n", crc);
+//             }
+//             else{
+//                 crc = (crc << 1);
+//                 // printf("device_#220 crc0 is %02x\n", crc);
+//             }
+//             //printf("device_#218 crc_n is %02x\n", crc);
+//         }
+//         // printf("device_#219 crc is %02x\n", crc);
+//     }
+//     return crc;
+// }
+
+// 2 times @2024.12.23
+int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {                              
+    // if (i2c_generate_crc(data, count) != checksum) return CRC_ERROR;
     uint16_t current_byte;
     uint8_t crc = CRC8_INIT;
     uint8_t crc_bit;
 
+    printf("device_#235 data: %02x, count: %d, checksum: %02x\n", data, count, checksum);
     // calculates 8-Bit checksum with given polynomial
     for (current_byte = 0; current_byte < count; ++current_byte) {
         crc ^= (data[current_byte]);
-        // printf("device_#211 original is %02x\n", data[current_byte]);
+        printf("device_#239 original is %02x\n", data[current_byte]);
         // printf("device_#212 crc_before is %02x\n", crc);
         for (crc_bit = 8; crc_bit > 0; --crc_bit) {
             if (crc & 0x80){
@@ -223,12 +251,8 @@ uint8_t i2c_generate_crc(const uint8_t* data, uint16_t count) {
         }
         // printf("device_#219 crc is %02x\n", crc);
     }
-    return crc;
-}
+    if(crc != checksum) return CRC_ERROR;
 
-// 2 times @2024.12.23
-int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {                              
-    if (i2c_generate_crc(data, count) != checksum) return CRC_ERROR;    
     return NO_ERROR;
 }
 
