@@ -232,7 +232,7 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
     uint8_t crc = CRC8_INIT;
     uint8_t crc_bit;
 
-    printf("device_#235 data: %02x, count: %d, checksum: %02x\n", data, count, checksum);
+    printf("device_#235 data0: %02x, data1: %02x, count: %d, checksum: %02x\n", data[0], data[1],count, checksum);
     // calculates 8-Bit checksum with given polynomial
     for (current_byte = 0; current_byte < count; ++current_byte) {
         crc ^= (data[current_byte]);
@@ -242,11 +242,9 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
         for (crc_bit = 8; crc_bit > 0; --crc_bit) {
             if (crc & 0x80){
                 crc = (crc << 1) ^ CRC8_POLYNOMIAL;
-                printf("device_#245 crc1 is %02x\n", crc);
             }
             else{
                 crc = (crc << 1);
-                printf("device_#249 crc0 is %02x\n", crc);
             }
             printf("device_#251 crc_n is %02x\n\n", crc);
         }
