@@ -246,7 +246,7 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
             else{
                 crc = (crc << 1);
             }
-            printf("device_#251 crc_n is %02x\n\n", crc);
+            printf("device_#251 crc[%d %d] is %02x\n\n", current_byte, crc_bit, crc);
         }
         printf("device_#253 crc is %02x\n", crc);
     }
