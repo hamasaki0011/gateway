@@ -54,8 +54,6 @@ int8_t StopMeasurement(void);
 /** Execute one read transaction on the I2C bus, reading a given number of bytes. */
 int8_t i2c_hal_read(uint8_t, uint8_t*, uint16_t);
 
-uint8_t i2c_generate_crc(const uint8_t*, uint16_t);
-
 int8_t i2c_check_crc(const uint8_t*, uint16_t, uint8_t);
 
 /** i2c_read_data_inplace() - Reads data from the Sensor. */

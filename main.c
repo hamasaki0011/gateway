@@ -63,6 +63,40 @@ int main(int argc, char *argv[]){
     //putchar('\n');
 
     FILE *fp; //FILE structure.
+
+    /// CRC Check program
+    // uint16_t current_byte;
+    // uint8_t crc = 0xff;
+    // uint8_t crc_bit;
+    // uint8_t data[] = {0xbe, 0xef};
+    // uint8_t count = 2;
+    // uint8_t checksum = 0x0;
+
+    // printf("device_#76\n data0: 0x%02x, data1: 0x%02x\n count: %d, checksum: %02x\n", data[0], data[1],count, checksum);
+    // putchar('\n');
+    // // calculates 8-Bit checksum with given polynomial
+    // for (current_byte = 0; current_byte < count; ++current_byte) {
+    //     printf("device_#80\n receipt data: 0x%02x and crc: 0x%02x\n", data[current_byte], crc);
+    //     crc ^= (data[current_byte]);
+    //     printf("device_#82 initialized crc %02x\n\n", crc);
+            
+    //     for (crc_bit = 8; crc_bit > 0; --crc_bit) {
+    //         printf("device_#85 crc 0x%02x\n", crc);
+    //         if (crc & 0x80){
+    //             crc = (crc << 1) ^ CRC8_POLYNOMIAL;
+    //         }
+    //         else{
+    //             crc = (crc << 1);
+    //         }
+    //         printf("device_#92 crc[%d, %d] is 0x%02x\n\n", current_byte, crc_bit, crc);
+    //     }
+    //     printf("device_#99 crc is %02x\n", crc);
+    // }
+    // checksum = crc;
+    // printf("main_#102 checksum= %02x\n", checksum);
+
+    // return 0;
+    /// 
     
     /// Normal operation.
     if(argc <= 1){
