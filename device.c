@@ -217,7 +217,8 @@ int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {
             }
         }
     }
-    printf("device_#220 crc: 0x%02x, checksum: 0x%02x\n", crc, checksum);
+    printf("device_#220 data0: 0x%02x, data1: 0x%02x\n", data[0], data[1]);
+    printf("device_#221 crc: 0x%02x, checksum: 0x%02x\n", crc, checksum);
     if(crc != checksum) return CRC_ERROR;
 
     return NO_ERROR;

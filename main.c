@@ -68,7 +68,7 @@ int main(int argc, char *argv[]){
     // uint16_t current_byte;
     // uint8_t crc = 0xff;
     // uint8_t crc_bit;
-    // uint8_t data[] = {0xbe, 0xef};
+    // uint8_t data[] = {0x18, 0xb1};
     // uint8_t count = 2;
     // uint8_t checksum = 0x0;
 
