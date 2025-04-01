@@ -132,18 +132,35 @@ int8_t StartContinuousMeasurement(void) {
 //     return r;
 // }
 int8_t ReadMeasuredValues(float* data1, float* data2, float* data3) {
+    uint8_t expected_data_length = 6;
     int8_t error = NO_ERROR;
     uint8_t buffer[9];
     uint16_t command = 0x327;
+    uint16_t i, j;
+    uint16_t size = (expected_data_length / WORD_SIZE) * (WORD_SIZE + CRC8_LEN);
     
     if(i2c_cmd_write(command)) return I2C_WRITE_FAILED;
 
     usleep(5000);
 
-    error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
-    if (error) {
-        return error;
-    }    
+    // error = ReadDataInplace(I2C_ADDRESS, &buffer[0], 6);
+
+    if (expected_data_length % WORD_SIZE != 0) return BYTE_NUM_ERROR;
+    // if (i2c_hal_read(address, buffer, size)) return I2C_READ_FAILED;
+    if (i2c_hal_read(I2C_ADDRESS, buffer, size)) return I2C_READ_FAILED;
+
+    for (i = 0, j = 0; i < size; i += WORD_SIZE + CRC8_LEN) {
+
+        if (i2c_check_crc(&buffer[i], WORD_SIZE, buffer[i + WORD_SIZE])) return CRC_ERROR;
+
+        buffer[j++] = buffer[i];
+        buffer[j++] = buffer[i + 1];
+
+    }
+
+    // if (error) {
+    //     return error;
+    // }    
 
     *data1 = (float)((uint16_t)buffer[0] << 8 | (uint16_t)buffer[1]) / 5.0f;
     *data2 = (float)((uint16_t)buffer[2] << 8 | (uint16_t)buffer[3]) / 100.0f;
@@ -199,13 +216,12 @@ int8_t i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
 
 }
 
-// 2 times @2024.12.23
 int8_t i2c_check_crc(const uint8_t* data, uint16_t count, uint8_t checksum) {                              
     uint16_t current_byte;
     uint8_t crc = CRC8_INIT;
     uint8_t crc_bit;
 
-    // calculates 8-Bit checksum with given polynomial
+    // calculates and generate 8-Bit checksum with given polynomial
     for (current_byte = 0; current_byte < count; ++current_byte) {
         crc ^= (data[current_byte]);
         for (crc_bit = 8; crc_bit > 0; --crc_bit) {
