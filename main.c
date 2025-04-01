@@ -101,12 +101,13 @@ int main(int argc, char *argv[]){
     /// Normal operation.
     if(argc <= 1){
         char ans[2];
-        char logMessage[128];
+        // char logMessage[128];
 
         fp = fopen(configFile, "r");
         if (fp == NULL){
-            fclose(fp);
-            strcpy(logMessage, "設定ファイルがありません.\n");
+            // ないものをcloseしようとしている
+            // fclose(fp);
+            printf("configファイルがありません.\n");
             printf("作成する場合は ... \"y\"を\n中止する場合は(プログラムを終了します.) ... \"n\"を入力してください.\n");
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
@@ -122,7 +123,7 @@ int main(int argc, char *argv[]){
                     return -1;
                 }
             }
-        }
+        }else printf("main_#127 I'm here\n");
 
     }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
         char ans[2];
