@@ -17,9 +17,11 @@ char* GetConfig(char*);
 char* SetUploadFile(char*, char*);
 char* SetLogFile(char*);
 int8_t Logging(char*, char*, char*);
-void DisplayUploadFormat(LOCATION, POINT*, char*);
+// void DisplayUploadFormat(LOCATION, POINT*, char*);
+void DisplayUploadFormat(LOCATION, POINT*);
 void DisplayConfig(char*);
-char* BuildConfig(char*, LOCATION, POINT*, char*);
+// char* BuildConfig(char*, LOCATION, POINT*, char*);
+void BuildConfig(char*, LOCATION, POINT*, char*);
 char* GetTimeStamp();
 int8_t CreateUploadFile(char*, LOCATION, POINT*, char*);
 

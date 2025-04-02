@@ -64,40 +64,6 @@ int main(int argc, char *argv[]){
 
     FILE *fp; //FILE structure.
 
-    /// CRC Check program
-    // uint16_t current_byte;
-    // uint8_t crc = 0xff;
-    // uint8_t crc_bit;
-    // uint8_t data[] = {0x18, 0xb1};
-    // uint8_t count = 2;
-    // uint8_t checksum = 0x0;
-
-    // printf("device_#76\n data0: 0x%02x, data1: 0x%02x\n count: %d, checksum: %02x\n", data[0], data[1],count, checksum);
-    // putchar('\n');
-    // // calculates 8-Bit checksum with given polynomial
-    // for (current_byte = 0; current_byte < count; ++current_byte) {
-    //     printf("device_#80\n receipt data: 0x%02x and crc: 0x%02x\n", data[current_byte], crc);
-    //     crc ^= (data[current_byte]);
-    //     printf("device_#82 initialized crc %02x\n\n", crc);
-            
-    //     for (crc_bit = 8; crc_bit > 0; --crc_bit) {
-    //         printf("device_#85 crc 0x%02x\n", crc);
-    //         if (crc & 0x80){
-    //             crc = (crc << 1) ^ CRC8_POLYNOMIAL;
-    //         }
-    //         else{
-    //             crc = (crc << 1);
-    //         }
-    //         printf("device_#92 crc[%d, %d] is 0x%02x\n\n", current_byte, crc_bit, crc);
-    //     }
-    //     printf("device_#99 crc is %02x\n", crc);
-    // }
-    // checksum = crc;
-    // printf("main_#102 checksum= %02x\n", checksum);
-
-    // return 0;
-    /// 
-    
     /// Normal operation.
     if(argc <= 1){
         char ans[2];
@@ -105,15 +71,12 @@ int main(int argc, char *argv[]){
 
         fp = fopen(configFile, "r");
         if (fp == NULL){
-            // ないものをcloseしようとしている
-            // fclose(fp);
             printf("configファイルがありません.\n");
             printf("作成する場合は ... \"y\"を\n中止する場合は(プログラムを終了します.) ... \"n\"を入力してください.\n");
             while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
                 scanf("%s", ans);        
                 if(strcmp(ans, "y") == 0){
                     BuildConfig(configFile, Site, Sensor, uploadFile);
-                    // fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
                     break;
 
                 }
@@ -123,7 +86,10 @@ int main(int argc, char *argv[]){
                     return -1;
                 }
             }
-        }else printf("main_#127 I'm here\n");
+        }
+        // Configファイルの中を確認
+        //else{
+        //}
 
     }else if(argc > 1 && (strcmp(argv[1], "setup") == 0)){
         char ans[2];
@@ -135,21 +101,19 @@ int main(int argc, char *argv[]){
             BuildConfig(configFile, Site, Sensor, uploadFile);
             // fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
         }else{
-            printf("設定ファイルが既に存在します.\n");
+            printf("以下の設定ファイルが既に存在します.\n");
             DisplayConfig(configFile);
-            printf("設定ファイルを作り直す場合は... \"y\"を\n中止する場合は... \"n\"を入力してください.\n");
-            while(strcmp(ans, "y") != 0 || strcmp(ans, "n") != 0){
+            printf("設定ファイルを修正する場合は... \"y\"を、\nこのまま使用する場合は... \"n\"を入力してください.\n");
+            while(true){
                 scanf("%s", ans);        
                 if(strcmp(ans, "y") == 0){
                     fclose(fp);
                     BuildConfig(configFile, Site, Sensor, uploadFile);
-                    // fp = fopen(BuildConfig(configFile, Site, Sensor, uploadFile), "r");
                     break;
 
                 }else if(strcmp(ans, "n") == 0){
                     fclose(fp);
                     break;
-
                 } 
             }
         }
