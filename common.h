@@ -1,7 +1,4 @@
-/*
- * Copyright (c) 2024
- */
-
+/* Copyright (c) 2024 */
 #ifndef COMMON_H
 #define COMMON_H
 
@@ -16,7 +13,7 @@
 /** Typedef section for types commonly defined in <stdint.h>
  * If your system does not provide stdint headers, please define them
  * accordingly. Please make sure to define int64_t and uint64_t. */
-//typedef unsigned int sizet;
+//typedef unsigned int size_t;
 /**
  * typedef unsigned long long int uint64_t;
  * typedef long long int int64_t;
@@ -27,8 +24,8 @@
  * typedef char int8_t;
  * typedef unsigned char uint8_t; */
 
-#define NO_ERROR 0
-#define NOT_IMPLEMENTED_ERROR 31
+// #define NO_ERROR 0
+// #define NOT_IMPLEMENTED_ERROR 31
 
 /*
 #ifndef ARRAY_SIZE

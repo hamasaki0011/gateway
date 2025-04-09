@@ -8,5 +8,6 @@
         "*.html": "django-html",
         "string.h": "c",
         "stdbool.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
